@@ -1,0 +1,54 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Database (local SQLite — re-created on first run)
+*.db
+*.sqlite3
+
+# Data cache (downloaded datasets — re-downloadable)
+data/cache/
+data/*.csv
+data/*.parquet
+!data/.gitkeep
+
+# Artifacts / reports (generated at runtime)
+artifacts/*
+!artifacts/.gitkeep
+
+# Generated HTML/JSON reports
+reports/*.html
+reports/*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# MLflow
+mlruns/
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Streamlit (legacy — replaced by FastAPI + HTML/CSS/JS)
+.streamlit/
