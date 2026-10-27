@@ -1023,3 +1023,36 @@ tbody td:first-child { color: var(--text-primary); font-weight: 500; }
 .text-red { color: var(--red); }
 .font-mono { font-family: 'JetBrains Mono', monospace; }
 .bold { font-weight: 700; }
+
+/* ── Tab bar (model switcher) ─────────────────────────────────────────────── */
+.tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    padding: 4px;
+    background: var(--surface-2);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+.tab {
+    flex: 1;
+    padding: 8px 14px;
+    border-radius: 7px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+.tab:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+.tab.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+}
+.model-panel { display: block; }
+.model-panel.hidden { display: none; }
+
+/* ── Experiment history table compact ─────────────────────────────────────── */
+.text-amber { color: var(--amber); }

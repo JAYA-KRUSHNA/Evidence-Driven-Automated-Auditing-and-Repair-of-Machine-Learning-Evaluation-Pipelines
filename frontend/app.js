@@ -1,4 +1,114 @@
-/* ── Charting helpers (inline SVG charts without dependencies) ── */
+/* ── Charting helpers (inline SVG, no dependencies) ── */
+
+// Feature importance horizontal bar chart
+function buildFeatureImportanceChart(importances, maxBars = 15) {
+    if (!importances || !Object.keys(importances).length) return '<p class="text-muted">No feature importances available for this model.</p>';
+    const entries = Object.entries(importances).slice(0, maxBars);
+    const maxVal = Math.max(...entries.map(e => e[1]));
+    return entries.map(([feat, val]) => {
+        const pct = maxVal > 0 ? (val / maxVal * 100).toFixed(1) : 0;
+        const displayName = feat.length > 28 ? feat.slice(0, 28) + '…' : feat;
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:0.82rem">
+            <span style="color:var(--text-secondary);min-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:monospace" title="${escHtml(feat)}">${escHtml(displayName)}</span>
+            <div style="flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:5px;transition:width 0.4s ease"></div>
+            </div>
+            <span style="color:var(--text-muted);min-width:54px;text-align:right;font-family:monospace">${(val * 100).toFixed(2)}%</span>
+        </div>`;
+    }).join('');
+}
+
+// Confusion matrix heatmap
+function buildConfusionMatrix(cm, labels) {
+    if (!cm || !cm.length) return '<p class="text-muted">No confusion matrix available.</p>';
+    const n = cm.length;
+    const maxVal = Math.max(...cm.flat());
+    const cellLabels = labels && labels.length === n ? labels : cm.map((_, i) => `Class ${i}`);
+    const cellSize = Math.max(48, Math.min(80, Math.floor(320 / n)));
+    let html = `<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:0.8rem">`;
+    html += `<tr><td style="width:${cellSize}px;height:${cellSize}px;color:var(--text-muted);font-size:0.7rem;padding:4px">Pred ↓<br>True →</td>`;
+    cellLabels.forEach(l => { html += `<td style="text-align:center;padding:4px;color:var(--text-muted);font-size:0.72rem;font-weight:600">${escHtml(String(l))}</td>`; });
+    html += `</tr>`;
+    cm.forEach((row, ri) => {
+        html += `<tr><td style="text-align:right;padding:4px;color:var(--text-muted);font-size:0.72rem;font-weight:600">${escHtml(String(cellLabels[ri]))}</td>`;
+        row.forEach((val, ci) => {
+            const intensity = maxVal > 0 ? val / maxVal : 0;
+            const isDiag = ri === ci;
+            const bg = isDiag
+                ? `rgba(16,185,129,${0.15 + intensity * 0.75})`
+                : `rgba(239,68,68,${intensity * 0.7})`;
+            const textColor = intensity > 0.6 ? '#fff' : 'var(--text-primary)';
+            html += `<td style="width:${cellSize}px;height:${cellSize}px;text-align:center;background:${bg};color:${textColor};font-weight:${isDiag?700:400};border:1px solid rgba(255,255,255,0.06);border-radius:4px;font-family:monospace;font-size:${n > 4 ? '0.7rem':'0.85rem'}">${val}</td>`;
+        });
+        html += `</tr>`;
+    });
+    html += `</table></div>`;
+    return html;
+}
+
+// CV fold per-fold table
+function buildCVFoldsTable(folds) {
+    if (!folds || !folds.length) return '<p class="text-muted">No per-fold data available.</p>';
+    const metrics = Object.keys(folds[0]).filter(k => k !== 'fold');
+    let html = `<div class="table-wrap"><table><thead><tr><th>Fold</th>${metrics.map(m => `<th>${m.replace(/_/g,' ')}</th>`).join('')}</tr></thead><tbody>`;
+    folds.forEach(f => {
+        html += `<tr><td style="font-weight:700;color:var(--accent)">Fold ${f.fold}</td>`;
+        metrics.forEach(m => { html += `<td class="font-mono">${(f[m]??'').toFixed ? f[m].toFixed(4) : f[m]}</td>`; });
+        html += `</tr>`;
+    });
+    // Average row
+    html += `<tr style="border-top:2px solid var(--border);background:rgba(99,102,241,0.06)"><td style="font-weight:700;color:var(--text-primary)">Mean</td>`;
+    metrics.forEach(m => {
+        const vals = folds.map(f => f[m]).filter(v => typeof v === 'number');
+        const avg = vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : 0;
+        html += `<td class="font-mono" style="font-weight:700;color:var(--accent)">${avg.toFixed(4)}</td>`;
+    });
+    html += `</tr></tbody></table></div>`;
+    return html;
+}
+
+// Train vs Test metric comparison mini-bars
+function buildTrainTestComparison(trainMetrics, testMetrics, baselineMetrics) {
+    const keys = Object.keys(testMetrics).filter(k => typeof testMetrics[k] === 'number' && !['confusion_matrix'].includes(k));
+    if (!keys.length) return '<p class="text-muted">No metrics available.</p>';
+    return keys.map(k => {
+        const train = trainMetrics[k];
+        const test = testMetrics[k];
+        const baseline = baselineMetrics && baselineMetrics[k];
+        const trainPct = typeof train === 'number' ? (train * 100).toFixed(1) : null;
+        const testPct = (test * 100).toFixed(1);
+        const gap = typeof train === 'number' ? Math.abs(train - test) : 0;
+        const gapColor = gap > 0.15 ? 'var(--red)' : gap > 0.05 ? 'var(--amber)' : 'var(--emerald)';
+        return `<div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:5px">
+                <span style="color:var(--text-secondary);font-weight:600">${k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
+                <span style="display:flex;gap:10px">
+                    ${typeof train === 'number' ? `<span style="color:var(--text-muted)">Train: ${trainPct}%</span>` : ''}
+                    <span style="color:var(--accent);font-weight:700">Test: ${testPct}%</span>
+                    ${typeof baseline === 'number' ? `<span style="color:var(--text-muted)">Base: ${(baseline*100).toFixed(1)}%</span>` : ''}
+                    ${gap > 0.05 ? `<span style="color:${gapColor};font-size:0.72rem">Δ${(gap*100).toFixed(1)}%</span>` : ''}
+                </span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+                ${typeof train === 'number' ? `<div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--text-muted)">
+                    <span style="min-width:40px">Train</span>
+                    <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+                        <div style="width:${trainPct}%;height:100%;background:rgba(99,102,241,0.5);border-radius:3px"></div>
+                    </div></div>` : ''}
+                <div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--text-muted)">
+                    <span style="min-width:40px">Test</span>
+                    <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+                        <div style="width:${testPct}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:3px"></div>
+                    </div></div>
+                ${typeof baseline === 'number' ? `<div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--text-muted)">
+                    <span style="min-width:40px">Base</span>
+                    <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+                        <div style="width:${(baseline*100).toFixed(1)}%;height:100%;background:rgba(255,255,255,0.15);border-radius:3px"></div>
+                    </div></div>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+}
 
 const API = '';  // Same origin
 
@@ -19,6 +129,7 @@ const State = {
     correctionResult: null,
     benchmarkResult: null,
 };
+
 
 // ══════════════════════════════════════════════════════════════════════════════
 // Router
@@ -99,13 +210,13 @@ async function renderDashboard() {
             <div class="card">
                 <div class="section-title">🚀 Quick Actions</div>
                 <div style="display:flex;flex-direction:column;gap:10px;">
-                    <button class="btn btn-primary btn-full" onclick="navigate('datasets')">📚 Browse &amp; Download Datasets</button>
+                    <button class="btn btn-primary btn-full" onclick="navigate('datasets')">📚 Browse & Download Datasets</button>
                     <button class="btn btn-secondary btn-full" onclick="navigate('experiment')">🧪 Run New Experiment</button>
                     <button class="btn btn-secondary btn-full" onclick="navigate('benchmark')">🎯 Run Benchmark Suite</button>
                 </div>
             </div>
             <div class="card">
-                <div class="section-title">🔍 What This Tool Does</div>
+                <div class="section-title">🔍 What This Tool Audits</div>
                 <div style="display:flex;flex-direction:column;gap:8px;font-size:0.85rem;color:var(--text-secondary);">
                     <div>✓ <strong style="color:var(--text-primary)">Target Leakage</strong> — Detects features that encode the target</div>
                     <div>✓ <strong style="color:var(--text-primary)">Preprocessing Leakage</strong> — AST code analysis + statistical checks</div>
@@ -119,8 +230,11 @@ async function renderDashboard() {
         </div>
 
         <div class="card">
-            <div class="section-title">📋 Recent Experiments</div>
-            <div id="recentExperiments">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <div class="section-title" style="margin-bottom:0">📋 Experiment History</div>
+                <button class="btn btn-secondary btn-sm" onclick="renderDashboard()">↻ Refresh</button>
+            </div>
+            <div id="experimentHistory">
                 <div class="empty-state">
                     <div class="empty-icon">🧪</div>
                     <div class="empty-title">No experiments yet</div>
@@ -149,29 +263,52 @@ async function renderDashboard() {
                 <div class="stat-label">${s.label}</div>
             </div>`).join('');
 
-        if (stats.recent_experiments?.length) {
-            const statusIcon = { completed: '✅', failed: '❌', running: '⏳', pending: '⏸️' };
-            document.getElementById('recentExperiments').innerHTML = `
-                <div class="table-wrap">
-                    <table>
-                        <thead><tr>
-                            <th>Status</th><th>Name</th><th>Task</th><th>Target</th><th>Duration</th><th>Created</th>
-                        </tr></thead>
-                        <tbody>${stats.recent_experiments.map(e => `
-                            <tr>
-                                <td>${statusIcon[e.status] || '❓'}</td>
-                                <td>${escHtml(e.name)}</td>
-                                <td><span class="badge badge-purple">${e.task_type}</span></td>
-                                <td><code class="font-mono" style="font-size:0.8rem">${escHtml(e.target_column)}</code></td>
-                                <td>${e.duration ? e.duration.toFixed(1) + 's' : '—'}</td>
-                                <td style="color:var(--text-muted);font-size:0.8rem">${e.created_at?.slice(0,19).replace('T',' ') || ''}</td>
-                            </tr>`).join('')}
-                        </tbody>
-                    </table>
-                </div>`;
-        }
     } catch (e) {
         toast('Failed to load dashboard stats: ' + e.message, 'error');
+    }
+
+    // Load experiment history from DB
+    try {
+        const history = await apiFetch('/api/experiments/history?limit=20');
+        const histEl = document.getElementById('experimentHistory');
+        if (!histEl) return;
+
+        if (!history.length) {
+            histEl.innerHTML = `<div class="empty-state"><div class="empty-icon">🧪</div>
+                <div class="empty-title">No experiments yet</div>
+                <div class="empty-desc">Start by selecting a dataset and running an experiment.</div></div>`;
+            return;
+        }
+
+        const statusIcon = { completed: '✅', failed: '❌', running: '⏳', pending: '⏸️' };
+        const primaryMetric = (m) => {
+            if (m.accuracy !== undefined) return `Acc ${(m.accuracy*100).toFixed(1)}%`;
+            if (m.r2 !== undefined) return `R² ${m.r2.toFixed(3)}`;
+            if (m.f1_score !== undefined) return `F1 ${(m.f1_score*100).toFixed(1)}%`;
+            const keys = Object.keys(m);
+            return keys.length ? `${keys[0]}: ${m[keys[0]]}` : '—';
+        };
+
+        histEl.innerHTML = `<div class="table-wrap"><table>
+            <thead><tr>
+                <th>Status</th><th>Name</th><th>Task</th><th>Target</th>
+                <th>Models</th><th>Test Metric</th><th>Duration</th><th>Date</th>
+            </tr></thead>
+            <tbody>${history.map(e => `
+                <tr>
+                    <td>${statusIcon[e.status] || '❓'}</td>
+                    <td style="font-weight:600;color:var(--text-primary)">${escHtml(e.name)}</td>
+                    <td><span class="badge badge-purple">${e.task_type}</span></td>
+                    <td><code class="font-mono" style="font-size:0.78rem">${escHtml(e.target_column)}</code></td>
+                    <td style="font-size:0.78rem;color:var(--text-muted)">${(e.model_config?.models || []).join(', ') || '—'}</td>
+                    <td style="font-family:monospace;color:var(--accent);font-weight:700">${primaryMetric(e.test_metrics)}</td>
+                    <td>${e.duration ? e.duration.toFixed(1)+'s' : '—'}</td>
+                    <td style="color:var(--text-muted);font-size:0.78rem">${e.created_at?.slice(0,16).replace('T',' ') || ''}</td>
+                </tr>`).join('')}
+            </tbody></table></div>`;
+    } catch (e) {
+        const histEl = document.getElementById('experimentHistory');
+        if (histEl) histEl.innerHTML = `<p style="color:var(--text-muted)">Could not load history: ${escHtml(e.message)}</p>`;
     }
 }
 
@@ -370,6 +507,24 @@ async function uploadFile(file) {
 async function renderExperiment() {
     const page = document.getElementById('page-experiment');
 
+    // Load dataset preview stats if we have a dataset
+    let datasetInfoHtml = '';
+    if (State.currentDataset) {
+        try {
+            const cur = await apiFetch('/api/datasets/current');
+            if (cur.loaded) {
+                datasetInfoHtml = `<div class="alert alert-success"><span class="alert-icon">✅</span>
+                    <div><strong>${escHtml(cur.name)}</strong>
+                    <span style="color:var(--text-muted);font-size:0.82rem;margin-left:10px">
+                        ${cur.rows?.toLocaleString()} rows &times; ${cur.cols} cols &nbsp;•&nbsp;
+                        ${cur.numeric_cols} numeric, ${cur.categorical_cols} categorical &nbsp;•&nbsp;
+                        ${cur.missing_pct}% missing
+                    </span></div></div>
+                    <button class="btn btn-secondary btn-sm mt-8" onclick="navigate('datasets')">Change Dataset</button>`;
+            }
+        } catch (e) {}
+    }
+
     page.innerHTML = `
         <div class="page-header">
             <h1 class="page-title">🧪 New Experiment</h1>
@@ -392,11 +547,7 @@ async function renderExperiment() {
                 <!-- Dataset selection -->
                 <div class="card mb-16">
                     <div class="section-title">1. Dataset</div>
-                    ${State.currentDataset ?
-                        `<div class="alert alert-success"><span class="alert-icon">✅</span>
-                         <div><strong>${escHtml(State.currentDataset.name)}</strong><br>
-                         <span style="font-size:0.8rem">${State.profile?.row_count?.toLocaleString() || '?'} rows × ${State.profile?.col_count || '?'} columns</span></div></div>
-                         <button class="btn btn-secondary btn-sm mt-8" onclick="navigate('datasets')">Change Dataset</button>` :
+                    ${State.currentDataset ? datasetInfoHtml :
                         `<div class="alert alert-warning"><span class="alert-icon">⚠️</span>No dataset loaded. Go to Dataset Library first.</div>
                          <button class="btn btn-primary btn-sm mt-8" onclick="navigate('datasets')">📚 Load Dataset</button>`
                     }
@@ -494,10 +645,11 @@ async function renderExperiment() {
 
 async function refreshModels() {
     const task = document.getElementById('expTask')?.value || 'classification';
+    const container = document.getElementById('modelCheckboxes');
+    if (!container) return;
     try {
+        container.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem">Loading models…</span>';
         const data = await apiFetch(`/api/experiments/models?task_type=${task}`);
-        const container = document.getElementById('modelCheckboxes');
-        if (!container) return;
         const defaultSelected = ['random_forest', 'logistic_regression'];
         container.innerHTML = Object.entries(data.models).map(([key, label]) => {
             const checked = defaultSelected.includes(key);
@@ -506,7 +658,9 @@ async function refreshModels() {
                 <span class="checkbox-label">${label}</span>
             </div>`;
         }).join('');
-    } catch (e) { /* silent */ }
+    } catch (e) {
+        if (container) container.innerHTML = `<span style="color:var(--red);font-size:0.84rem">Failed to load models: ${escHtml(e.message)}</span>`;
+    }
 }
 
 function toggleCheckbox(el) {
@@ -652,6 +806,11 @@ async function runExperiment() {
 
     } catch (e) {
         clearInterval(progInterval);
+        // Reset progress bar on failure
+        document.getElementById('progressFill').style.width = '0%';
+        document.getElementById('progressPct').textContent = '0%';
+        document.getElementById('progressStep').textContent = '❌ Failed';
+        setTimeout(() => document.getElementById('progressPanel')?.classList.add('hidden'), 2000);
         toast('Experiment failed: ' + e.message, 'error');
     } finally {
         document.getElementById('runBtn').disabled = false;
@@ -664,7 +823,6 @@ function renderExperimentResults(result) {
     // Audit summary banner
     const audit = result.audit;
     const summary = audit.summary;
-    const sevColor = summary.critical > 0 ? 'var(--red)' : summary.high > 0 ? 'var(--orange)' : 'var(--emerald)';
 
     let html = `
         <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:16px;margin-bottom:20px">
@@ -674,24 +832,71 @@ function renderExperimentResults(result) {
                 <span style="color:var(--red)">Confirmed: <strong>${summary.confirmed}</strong></span>
                 <span style="color:var(--amber)">Suspected: <strong>${summary.suspected}</strong></span>
                 <span style="color:var(--emerald)">Auto-correctable: <strong>${summary.auto_correctable}</strong></span>
-                <span style="color:var(--text-muted)">Duration: ${summary.duration_seconds?.toFixed(1)}s</span>
+                <span style="color:var(--text-muted)">Audit time: ${summary.duration_seconds?.toFixed(2)}s</span>
             </div>
         </div>`;
 
-    // Model results
-    for (const [model, tr] of Object.entries(result.training_results)) {
-        html += `<div style="margin-bottom:20px">
-            <div style="font-weight:700;color:var(--text-primary);margin-bottom:10px">🤖 ${model.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-                ${Object.entries(tr.test_metrics || {}).map(([k,v]) =>
-                    `<div class="metric-item">
-                        <div class="metric-name">${k.replace(/_/g,' ')}</div>
-                        <div class="metric-val">${typeof v === 'number' ? v.toFixed(3) : v}</div>
-                    </div>`).join('')}
-            </div>
-            ${tr.training_time ? `<p class="text-muted mt-4">Training time: ${tr.training_time}s</p>` : ''}
+    // Split info
+    const si = result.split_info;
+    html += `<div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid var(--border)">
+        Split: <strong style="color:var(--text-secondary)">${si?.train_size?.toLocaleString()} train</strong> /
+        <strong style="color:var(--text-secondary)">${si?.test_size?.toLocaleString()} test</strong> &nbsp;•&nbsp;
+        Seed: ${si?.random_seed} &nbsp;•&nbsp;
+        Overlap: <span style="color:${si?.overlap?.overlap_count>0?'var(--red)':'var(--emerald)'}">${si?.overlap?.overlap_count || 0} rows</span>
+    </div>`;
+
+    // Tab bar for multi-model
+    const modelNames = Object.keys(result.training_results);
+    if (modelNames.length > 1) {
+        html += `<div class="tab-bar" id="modelTabBar">
+            ${modelNames.map((m, i) => `<div class="tab ${i===0?'active':''}" onclick="switchModelTab('${m}',this)">
+                ${m.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}
+            </div>`).join('')}
         </div>`;
     }
+
+    // Model detail panels
+    modelNames.forEach((modelName, idx) => {
+        const tr = result.training_results[modelName];
+        const isActive = idx === 0;
+        const displayName = modelName.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+
+        html += `<div class="model-panel ${isActive?'active':'hidden'}" id="panel-${modelName}">
+
+            <!-- Metrics: Train vs Test vs Baseline -->
+            <div class="section-title" style="margin-top:16px">🤖 ${displayName}</div>
+            <div class="card" style="margin-bottom:16px">
+                <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Train / Test / Baseline Comparison</div>
+                ${buildTrainTestComparison(tr.train_metrics, tr.test_metrics, tr.baseline_metrics)}
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">Training time: ${tr.training_time}s</div>
+            </div>
+
+            <!-- Feature Importance -->
+            ${tr.feature_importances && Object.keys(tr.feature_importances).length ? `
+            <div class="card" style="margin-bottom:16px">
+                <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Feature Importance (Top 15)</div>
+                ${buildFeatureImportanceChart(tr.feature_importances, 15)}
+            </div>` : ''}
+
+            <!-- Confusion Matrix (classification only) -->
+            ${tr.confusion_matrix ? `
+            <div class="card" style="margin-bottom:16px">
+                <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Confusion Matrix (Test Set)</div>
+                ${buildConfusionMatrix(tr.confusion_matrix)}
+                <div style="font-size:0.72rem;color:var(--text-muted);margin-top:8px">Green diagonal = correct predictions. Red off-diagonal = errors.</div>
+            </div>` : ''}
+
+            <!-- CV Fold Breakdown -->
+            ${tr.cv_folds && tr.cv_folds.length ? `
+            <div class="card" style="margin-bottom:16px">
+                <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Cross-Validation Per-Fold Results</div>
+                ${buildCVFoldsTable(tr.cv_folds)}
+                <div style="font-size:0.72rem;color:var(--text-muted);margin-top:6px">
+                    CV Accuracy: ${tr.cv_metrics.cv_accuracy_mean ? (tr.cv_metrics.cv_accuracy_mean*100).toFixed(2)+'% ± '+(tr.cv_metrics.cv_accuracy_std*100).toFixed(2)+'%' : '—'}
+                </div>
+            </div>` : ''}
+        </div>`;
+    });
 
     // Top findings
     if (audit.findings?.length) {
@@ -706,6 +911,39 @@ function renderExperimentResults(result) {
     }
 
     container.innerHTML = html;
+}
+
+function switchModelTab(modelName, tabEl) {
+    document.querySelectorAll('#modelTabBar .tab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+    document.querySelectorAll('.model-panel').forEach(p => p.classList.add('hidden'));
+    const panel = document.getElementById(`panel-${modelName}`);
+    if (panel) { panel.classList.remove('hidden'); panel.classList.add('active'); }
+}
+
+async function exportFindingsCSV() {
+    try {
+        const res = await fetch('/api/findings/export');
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ detail: res.statusText }));
+            throw new Error(err.detail || res.statusText);
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        // Use content-disposition filename from server if available
+        const cd = res.headers.get('content-disposition') || '';
+        const match = cd.match(/filename=([^;]+)/);
+        a.download = match ? match[1].trim() : 'audit_findings.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast('Findings exported as CSV!', 'success');
+    } catch (e) {
+        toast('Export failed: ' + e.message, 'error');
+    }
 }
 
 function buildFindingMini(f) {
@@ -741,9 +979,15 @@ function renderFindings() {
     const findings = audit.findings || [];
 
     page.innerHTML = `
-        <div class="page-header">
-            <h1 class="page-title">🔍 Audit Findings</h1>
-            <p class="page-subtitle">All detected issues with full evidence and recommendations.</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div>
+                <h1 class="page-title" style="margin-bottom:4px">🔍 Audit Findings</h1>
+                <p class="page-subtitle" style="margin:0">All detected issues with full evidence and recommendations.</p>
+            </div>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-secondary btn-sm" onclick="exportFindingsCSV()">⬇️ Export CSV</button>
+                <button class="btn btn-secondary btn-sm" onclick="navigate('comparison')">🔧 Apply Fixes</button>
+            </div>
         </div>
 
         <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:24px">
@@ -992,17 +1236,9 @@ function renderCorrectionResult(cr) {
 
 async function renderBenchmark() {
     const page = document.getElementById('page-benchmark');
-
-    let catalogOptions = '';
-    try {
-        const datasets = await apiFetch('/api/datasets/catalog');
-        catalogOptions = datasets.map(d =>
-            `<option value="${d.source}|${d.source_id}|${encodeURIComponent(d.name)}|${d.target_column||''}">${d.name}</option>`
-        ).join('');
-    } catch (e) { catalogOptions = '<option>Failed to load</option>'; }
-
     const br = State.benchmarkResult;
 
+    // Render shell first so DOM elements exist
     page.innerHTML = `
         <div class="page-header">
             <h1 class="page-title">🎯 Benchmark Lab</h1>
@@ -1014,7 +1250,9 @@ async function renderBenchmark() {
             <div class="grid-2">
                 <div class="form-group">
                     <label class="form-label">Base Dataset</label>
-                    <select id="bmDataset" class="form-control" onchange="updateBmTarget()">${catalogOptions}</select>
+                    <select id="bmDataset" class="form-control" onchange="updateBmTarget()">
+                        <option value="">Loading datasets…</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Task Type</label>
@@ -1026,7 +1264,8 @@ async function renderBenchmark() {
             </div>
             <div class="form-group">
                 <label class="form-label">Target Column</label>
-                <input id="bmTarget" class="form-control" type="text" placeholder="e.g. target">
+                <input id="bmTarget" class="form-control" type="text" placeholder="e.g. target"
+                    value="${State.currentDataset ? (State.targetCandidates.slice(-1)[0] || '') : ''}">
             </div>
             <div class="alert alert-info mb-16">
                 <span class="alert-icon">ℹ️</span>
@@ -1040,27 +1279,46 @@ async function renderBenchmark() {
 
         <div id="benchmarkResults" class="${br ? '' : 'hidden'}"></div>`;
 
-    // Pre-fill target
-    updateBmTarget();
+    // Load catalog asynchronously AFTER DOM is ready
+    try {
+        const datasets = await apiFetch('/api/datasets/catalog');
+        const sel = document.getElementById('bmDataset');
+        if (sel) {
+            sel.innerHTML = datasets.map(d =>
+                `<option value="${encodeURIComponent(d.source)}|${encodeURIComponent(d.source_id)}|${encodeURIComponent(d.name)}|${encodeURIComponent(d.target_column||'')}">${escHtml(d.name)}</option>`
+            ).join('');
+            updateBmTarget();
+        }
+    } catch (e) {
+        const sel = document.getElementById('bmDataset');
+        if (sel) sel.innerHTML = '<option value="">Failed to load datasets</option>';
+    }
+
     if (br) renderBenchmarkResults(br);
 }
 
 function updateBmTarget() {
     const sel = document.getElementById('bmDataset');
-    if (!sel) return;
-    const parts = sel.value.split('|');
-    const target = parts[3] ? decodeURIComponent(parts[3]) : '';
-    const targetInput = document.getElementById('bmTarget');
-    if (targetInput && target) targetInput.value = target;
+    if (!sel || !sel.value) return;
+    try {
+        const parts = sel.value.split('|');
+        const target = parts[3] ? decodeURIComponent(parts[3]) : '';
+        const targetInput = document.getElementById('bmTarget');
+        if (targetInput && target) targetInput.value = target;
+    } catch (e) { /* ignore decode error */ }
 }
 
 async function runBenchmark() {
     const sel = document.getElementById('bmDataset');
-    if (!sel) return;
-    const [source, source_id, nameEnc] = sel.value.split('|');
+    if (!sel || !sel.value) { toast('Select a dataset first', 'error'); return; }
+    const parts = sel.value.split('|');
+    const source = decodeURIComponent(parts[0] || '');
+    const source_id = decodeURIComponent(parts[1] || '');
+    const nameEnc = parts[2] || '';
     const target = document.getElementById('bmTarget').value.trim();
     const task = document.getElementById('bmTask').value;
 
+    if (!source || !source_id) { toast('Select a valid dataset', 'error'); return; }
     if (!target) { toast('Enter a target column', 'error'); return; }
 
     document.getElementById('bmRunBtn').disabled = true;
@@ -1097,7 +1355,11 @@ function renderBenchmarkResults(result) {
     const container = document.getElementById('benchmarkResults');
     if (!container) return;
 
-    const ov = result.overall;
+    const ov = result.overall || {};
+    if (!ov.overall_precision && !ov.overall_recall) {
+        container.innerHTML = '<div class="alert alert-warning"><span class="alert-icon">⚠️</span>Benchmark completed but no results were generated.</div>';
+        return;
+    }
 
     const f1Class = v => v >= 0.8 ? 'f1-excellent' : v >= 0.6 ? 'f1-good' : v >= 0.4 ? 'f1-poor' : 'f1-fail';
 
@@ -1222,13 +1484,21 @@ async function downloadReport(format) {
     showLoading(`Generating ${format.toUpperCase()} report…`);
     try {
         const res = await fetch(`/api/reports/generate?format=${format}`, { method: 'POST' });
-        if (!res.ok) throw new Error((await res.json()).detail);
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ detail: res.statusText }));
+            throw new Error(err.detail || res.statusText);
+        }
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `audit_report.${format}`;
+        // Use dataset name in filename if available
+        const dsName = (State.currentDataset?.name || 'audit').replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
+        const ts = new Date().toISOString().slice(0,10);
+        a.download = `${dsName}_audit_${ts}.${format}`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
         toast(`${format.toUpperCase()} report downloaded!`, 'success');
     } catch (e) {
@@ -1288,9 +1558,22 @@ function buildSeverityBars(bySev) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Boot
+// Boot — restore session state from server, then navigate
 // ══════════════════════════════════════════════════════════════════════════════
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check if server still has a dataset loaded (handles page refreshes)
+    try {
+        const current = await apiFetch('/api/datasets/current');
+        if (current.loaded) {
+            State.currentDataset = {
+                source: current.id?.split('_')[0] || 'unknown',
+                source_id: current.id || '',
+                name: current.name || 'Loaded Dataset',
+            };
+            State.columns = current.columns || [];
+            State.dtypes = current.dtypes || {};
+        }
+    } catch (e) { /* server may not have state — ok */ }
     navigate('dashboard');
 });
