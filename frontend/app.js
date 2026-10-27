@@ -158,6 +158,18 @@ function navigate(page) {
     if (renderer) renderer();
 }
 
+function updateFindingsBadge() {
+    const badge = document.getElementById('findingsBadge');
+    if (!badge) return;
+    const count = State.auditResult?.findings?.length || 0;
+    if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'inline-flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // API helpers
 // ══════════════════════════════════════════════════════════════════════════════
@@ -182,12 +194,17 @@ function hideLoading() {
 
 function toast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
-    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    const icons = { success: '✔️', error: '❌', info: 'ℹ️', warning: '⚠️' };
     const el = document.createElement('div');
     el.className = `toast ${type}`;
-    el.innerHTML = `<span>${icons[type]}</span><span>${message}</span>`;
+    el.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${escHtml(message)}</span>`;
     container.appendChild(el);
-    setTimeout(() => el.remove(), 3200);
+    setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(20px)';
+        el.style.transition = 'all 0.2s ease';
+        setTimeout(() => el.remove(), 200);
+    }, 3500);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -788,6 +805,9 @@ async function runExperiment() {
 
         State.experimentResult = result;
         State.auditResult = result.audit;
+
+        // Update findings badge
+        updateFindingsBadge();
 
         if (result.status === 'failed') {
             toast('Experiment failed: ' + result.error, 'error');
