@@ -1,25 +1,27 @@
 """
-EDA Engine — Automated Exploratory Data Analysis.
+EDA Engine — Automated, Intelligent Exploratory Data Analysis.
 
-Produces a comprehensive analysis of any tabular dataset without
-hard-coding any column names.
+Produces comprehensive data profiling, deep quality audits, statistical summaries,
+univariate/bivariate/multivariate visualizations, multi-method outlier detection,
+target variable analysis, automated feature selection, and data-driven AI insights.
 
-Analysis modules
-----------------
-    overview          – shape, dtypes, memory, file info
-    statistics        – descriptive stats for numerical + categorical columns
-    missing_analysis  – per-column missing value report
-    distribution      – value counts, skewness, kurtosis, percentiles
-    correlation       – correlation matrix + highly-correlated pairs
-    outlier_summary   – IQR + Z-score based outlier counts per column
-    target_analysis   – target distribution, class stats, feature importance
-
-Public API
+Public API:
 ----------
-    EDAEngine.analyze(df, metadata, target_column=None)
-        → dict  (all analysis modules combined)
+    EDAEngine.analyze(df, metadata, target_column=None, task_type=None)
+        → dict  (all legacy & enhanced analysis modules combined)
     EDAEngine.save(result, dataset_id, session=None)
-        → EDAResult ORM row
+        → list[EDAResult]
+    EDAEngine.get_overview(df, metadata)
+    EDAEngine.get_quality(df, metadata)
+    EDAEngine.get_univariate(df, metadata, column=None)
+    EDAEngine.get_bivariate(df, metadata, col1=None, col2=None)
+    EDAEngine.get_multivariate(df, metadata)
+    EDAEngine.get_outliers(df, metadata, method="all")
+    EDAEngine.get_target(df, metadata, target_column=None, task_type=None)
+    EDAEngine.get_features(df, metadata, target_column=None)
+    EDAEngine.get_insights(df, metadata, target_column=None)
+    EDAEngine.generate_chart(df, chart_type, params)
+    EDAEngine.generate_report(dataset_name, eda_data, format="html")
 """
 
 import logging
@@ -29,6 +31,30 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from .overview import compute_overview
+from .quality import compute_quality
+from .univariate import compute_univariate, analyze_numerical_column, analyze_categorical_column
+from .bivariate import compute_bivariate
+from .multivariate import compute_multivariate
+from .outliers import compute_outliers
+from .target import compute_target_analysis
+from .features import compute_feature_analysis
+from .insights import generate_insights
+from .charts import (
+    chart_histogram_kde,
+    chart_boxplot,
+    chart_violin,
+    chart_category_counts,
+    chart_category_donut,
+    chart_scatter_trendline,
+    chart_grouped_box,
+    chart_stacked_bar,
+    chart_correlation_heatmap,
+    chart_pca_projection,
+    chart_vif_bars,
+    chart_outlier_scatter,
+)
+from .reports import generate_html_report, generate_pdf_report, generate_excel_report
 from ..config import (
     OUTLIER_IQR_MULTIPLIER,
     OUTLIER_ZSCORE_THRESHOLD,
@@ -39,36 +65,202 @@ logger = logging.getLogger(__name__)
 
 
 class EDAEngine:
-    """Run automated EDA on a DataFrame."""
+    """Run automated, intelligent EDA on any tabular DataFrame."""
 
-    # ── Main entry point ──────────────────────────────────────────────────
+    # ── Main Entry Point ──────────────────────────────────────────────────
 
     @staticmethod
     def analyze(
         df: pd.DataFrame,
-        metadata: dict[str, Any],
+        metadata: dict[str, Any] | None = None,
         target_column: str | None = None,
+        task_type: str | None = None,
     ) -> dict[str, Any]:
         """
         Run the full EDA pipeline and return a serialisable result dict.
-        All values are JSON-safe (no numpy types, no NaN — replaced with None).
+        Guarantees all 7 legacy keys for 100% backward compatibility,
+        plus enhanced modules: quality, bivariate, multivariate, outliers, features, insights.
         """
+        if metadata is None:
+            metadata = {}
+
         result: dict[str, Any] = {}
 
-        result["overview"] = EDAEngine._overview(df, metadata)
+        # 1. Overview & Health Score
+        result["overview"] = compute_overview(df, metadata)
+
+        # 2. Quality Audit
+        result["quality"] = compute_quality(df, metadata)
+
+        # 3. Descriptive Statistics (legacy format preserved)
         result["statistics"] = EDAEngine._statistics(df, metadata)
+
+        # 4. Missing Analysis (legacy format preserved)
         result["missing_analysis"] = EDAEngine._missing_analysis(df)
+
+        # 5. Distribution (legacy format preserved)
         result["distribution"] = EDAEngine._distribution(df, metadata)
+
+        # 6. Correlation (legacy format preserved)
         result["correlation"] = EDAEngine._correlation(df, metadata)
-        result["outlier_summary"] = EDAEngine._outlier_summary(df, metadata)
 
+        # 7. Outliers (legacy outlier_summary key preserved)
+        outlier_res = compute_outliers(df, metadata, method="all")
+        result["outlier_summary"] = {
+            "total_iqr_outliers": outlier_res["total_iqr_outliers"],
+            "columns_with_outliers": outlier_res["columns_with_outliers"],
+            "per_column": outlier_res["per_column"],
+        }
+        result["outliers"] = outlier_res
+
+        # 8. Bivariate Analysis
+        result["bivariate"] = compute_bivariate(df, metadata)
+
+        # 9. Multivariate Analysis (PCA, VIF, Interactions)
+        result["multivariate"] = compute_multivariate(df, metadata)
+
+        # 10. Target Analysis
         if target_column and target_column in df.columns:
-            result["target_analysis"] = EDAEngine._target_analysis(df, target_column, metadata)
+            result["target_analysis"] = compute_target_analysis(df, target_column, task_type, metadata)
         else:
-            result["target_analysis"] = {"available": False, "reason": "No target column specified"}
+            suggested = compute_target_analysis(df, None, None, metadata)
+            result["target_analysis"] = {
+                "available": False,
+                "reason": "No target column specified",
+                "suggested_targets": suggested.get("suggested_targets", []),
+            }
 
-        logger.info("EDA complete for dataset with shape %s", df.shape)
+        # 11. Feature Analysis
+        result["features"] = compute_feature_analysis(df, target_column, metadata)
+
+        # 12. Intelligent AI Insights Engine
+        univariate_full = compute_univariate(df, metadata)
+        result["univariate"] = univariate_full
+        result["insights"] = generate_insights(
+            overview_data=result["overview"],
+            quality_data=result["quality"],
+            univariate_data=univariate_full,
+            correlation_data=result["correlation"],
+            outliers_data=result["outlier_summary"],
+            target_data=result["target_analysis"],
+            features_data=result["features"],
+        )
+
+        logger.info("Enhanced EDA complete for dataset with shape %s", df.shape)
         return result
+
+    # ── Modular Sub-APIs ──────────────────────────────────────────────────
+
+    @staticmethod
+    def get_overview(df: pd.DataFrame, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
+        return compute_overview(df, metadata)
+
+    @staticmethod
+    def get_quality(df: pd.DataFrame, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
+        return compute_quality(df, metadata)
+
+    @staticmethod
+    def get_univariate(df: pd.DataFrame, metadata: dict[str, Any] | None = None, column: str | None = None) -> dict[str, Any]:
+        return compute_univariate(df, metadata, column=column)
+
+    @staticmethod
+    def get_bivariate(df: pd.DataFrame, metadata: dict[str, Any] | None = None, col1: str | None = None, col2: str | None = None) -> dict[str, Any]:
+        return compute_bivariate(df, metadata, col1=col1, col2=col2)
+
+    @staticmethod
+    def get_multivariate(df: pd.DataFrame, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
+        return compute_multivariate(df, metadata)
+
+    @staticmethod
+    def get_outliers(df: pd.DataFrame, metadata: dict[str, Any] | None = None, method: str = "all") -> dict[str, Any]:
+        return compute_outliers(df, metadata, method=method)
+
+    @staticmethod
+    def get_target(df: pd.DataFrame, metadata: dict[str, Any] | None = None, target_column: str | None = None, task_type: str | None = None) -> dict[str, Any]:
+        return compute_target_analysis(df, target_column=target_column, task_type=task_type, metadata=metadata)
+
+    @staticmethod
+    def get_features(df: pd.DataFrame, metadata: dict[str, Any] | None = None, target_column: str | None = None) -> dict[str, Any]:
+        return compute_feature_analysis(df, target_column=target_column, metadata=metadata)
+
+    @staticmethod
+    def get_insights(df: pd.DataFrame, metadata: dict[str, Any] | None = None, target_column: str | None = None) -> list[dict[str, Any]]:
+        full = EDAEngine.analyze(df, metadata=metadata, target_column=target_column)
+        return full.get("insights", [])
+
+    @staticmethod
+    def generate_chart(df: pd.DataFrame, chart_type: str, params: dict[str, Any]) -> dict[str, Any]:
+        """Generate interactive Plotly figure based on chart type and parameters."""
+        col1 = params.get("col1") or params.get("column")
+        col2 = params.get("col2")
+
+        if chart_type == "hist_kde" and col1 and col1 in df.columns:
+            return chart_histogram_kde(df[col1], col1)
+        elif chart_type == "box" and col1 and col1 in df.columns:
+            return chart_boxplot(df[col1], col1)
+        elif chart_type == "violin" and col1 and col1 in df.columns:
+            return chart_violin(df[col1], col1)
+        elif chart_type == "category_bar" and col1 and col1 in df.columns:
+            return chart_category_counts(df[col1], col1)
+        elif chart_type == "category_donut" and col1 and col1 in df.columns:
+            return chart_category_donut(df[col1], col1)
+        elif chart_type == "scatter" and col1 and col2 and col1 in df.columns and col2 in df.columns:
+            return chart_scatter_trendline(df, col1, col2)
+        elif chart_type == "grouped_box" and col1 and col2 and col1 in df.columns and col2 in df.columns:
+            return chart_grouped_box(df, num_col=col1, cat_col=col2)
+        elif chart_type == "stacked_bar" and col1 and col2 and col1 in df.columns and col2 in df.columns:
+            return chart_stacked_bar(df, col1, col2)
+        elif chart_type == "corr_heatmap":
+            corr_res = EDAEngine._correlation(df, {})
+            matrix = corr_res.get("matrix")
+            if not matrix:
+                num_df = df.select_dtypes(include=[np.number])
+                if len(num_df.columns) >= 2:
+                    cm = num_df.corr()
+                    matrix = {
+                        col: {o: _safe_float(cm.loc[col, o]) for o in num_df.columns}
+                        for col in num_df.columns
+                    }
+                else:
+                    matrix = {}
+            return chart_correlation_heatmap(matrix or {})
+        elif chart_type == "pca":
+            multi = compute_multivariate(df, {})
+            return chart_pca_projection(multi.get("pca", {}))
+        elif chart_type == "vif":
+            multi = compute_multivariate(df, {})
+            return chart_vif_bars(multi.get("vif", {}).get("values", {}))
+        elif chart_type == "outlier_scatter" and col1 and col1 in df.columns:
+            s = df[col1].dropna()
+            q1 = s.quantile(0.25)
+            q3 = s.quantile(0.75)
+            iqr = q3 - q1
+            lower = q1 - 1.5 * iqr
+            upper = q3 + 1.5 * iqr
+            return chart_outlier_scatter(s, col1, lower, upper)
+        else:
+            return {"error": f"Unsupported or misconfigured chart_type '{chart_type}'"}
+
+    @staticmethod
+    def generate_report(dataset_name: str, eda_data: dict[str, Any], format: str = "html") -> tuple[bytes | str, str, str]:
+        """
+        Generate full EDA report in HTML, PDF, or Excel format.
+        Returns: (content, media_type, filename)
+        """
+        fmt = format.lower()
+        safe_name = dataset_name.replace(" ", "_").replace("/", "_")
+
+        if fmt == "html":
+            content = generate_html_report(dataset_name, eda_data)
+            return content, "text/html", f"EDA_Report_{safe_name}.html"
+        elif fmt == "pdf":
+            content = generate_pdf_report(dataset_name, eda_data)
+            return content, "application/pdf", f"EDA_Report_{safe_name}.pdf"
+        elif fmt in ("excel", "xlsx"):
+            content = generate_excel_report(dataset_name, eda_data)
+            return content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", f"EDA_Report_{safe_name}.xlsx"
+        else:
+            raise ValueError(f"Unsupported report format '{format}'. Choose from 'html', 'pdf', 'excel'.")
 
     # ── Save to DB ────────────────────────────────────────────────────────
 
@@ -110,38 +302,29 @@ class EDAEngine:
                 session.close()
 
     # ═══════════════════════════════════════════════════════════════════════
-    #  Module 1 — Overview
+    #  Legacy Helper Implementations (100% Backwards Compatible)
     # ═══════════════════════════════════════════════════════════════════════
 
     @staticmethod
     def _overview(df: pd.DataFrame, metadata: dict) -> dict:
-        num_rows, num_cols = df.shape
-        return {
-            "num_rows": num_rows,
-            "num_columns": num_cols,
-            "total_cells": num_rows * num_cols,
-            "total_missing_cells": int(df.isnull().sum().sum()),
-            "missing_pct": _safe_float(df.isnull().sum().sum() / (num_rows * num_cols) * 100),
-            "duplicate_rows": int(df.duplicated().sum()),
-            "memory_bytes": int(df.memory_usage(deep=True).sum()),
-            "memory_mb": _safe_float(df.memory_usage(deep=True).sum() / 1_048_576),
-            "numerical_columns": metadata.get("numerical_columns", []),
-            "categorical_columns": metadata.get("categorical_columns", []),
-            "datetime_columns": metadata.get("datetime_columns", []),
-            "identifier_columns": metadata.get("identifier_columns", []),
-            "column_types": metadata.get("column_types", {}),
-            "file_format": metadata.get("file_format"),
-            "file_size_bytes": metadata.get("file_size_bytes"),
-        }
-
-    # ═══════════════════════════════════════════════════════════════════════
-    #  Module 2 — Descriptive statistics
-    # ═══════════════════════════════════════════════════════════════════════
+        return compute_overview(df, metadata)
 
     @staticmethod
     def _statistics(df: pd.DataFrame, metadata: dict) -> dict:
-        numerical_cols = [c for c in metadata.get("numerical_columns", []) if c in df.columns]
-        categorical_cols = [c for c in metadata.get("categorical_columns", []) if c in df.columns]
+        numerical_cols = [
+            c for c in metadata.get("numerical_columns", [])
+            if c in df.columns
+        ] or [
+            c for c in df.columns
+            if pd.api.types.is_numeric_dtype(df[c]) and not pd.api.types.is_bool_dtype(df[c])
+        ]
+        categorical_cols = [
+            c for c in metadata.get("categorical_columns", [])
+            if c in df.columns
+        ] or [
+            c for c in df.columns
+            if c not in numerical_cols
+        ]
 
         numerical_stats: dict[str, Any] = {}
         for col in numerical_cols:
@@ -162,6 +345,10 @@ class EDAEngine:
                 "kurtosis": _safe_float(series.kurtosis()),
                 "nunique": int(series.nunique()),
                 "dtype": str(df[col].dtype),
+                # Compatibility keys
+                "25%": _safe_float(series.quantile(0.25)),
+                "50%": _safe_float(series.median()),
+                "75%": _safe_float(series.quantile(0.75)),
             }
 
         categorical_stats: dict[str, Any] = {}
@@ -186,10 +373,6 @@ class EDAEngine:
             "categorical": categorical_stats,
         }
 
-    # ═══════════════════════════════════════════════════════════════════════
-    #  Module 3 — Missing value analysis
-    # ═══════════════════════════════════════════════════════════════════════
-
     @staticmethod
     def _missing_analysis(df: pd.DataFrame) -> dict:
         num_rows = len(df)
@@ -199,36 +382,42 @@ class EDAEngine:
             if missing_count > 0:
                 per_column[col] = {
                     "missing_count": missing_count,
-                    "missing_pct": _safe_float(missing_count / num_rows * 100),
+                    "missing_pct": _safe_float(missing_count / max(num_rows, 1) * 100),
                     "dtype": str(df[col].dtype),
                 }
 
-        # Rows with at least one missing value
         rows_with_missing = int(df.isnull().any(axis=1).sum())
 
         return {
             "total_missing_cells": int(df.isnull().sum().sum()),
             "columns_with_missing": len(per_column),
             "rows_with_missing": rows_with_missing,
-            "rows_with_missing_pct": _safe_float(rows_with_missing / num_rows * 100),
+            "rows_with_missing_pct": _safe_float(rows_with_missing / max(num_rows, 1) * 100),
             "per_column": per_column,
         }
 
-    # ═══════════════════════════════════════════════════════════════════════
-    #  Module 4 — Distribution analysis
-    # ═══════════════════════════════════════════════════════════════════════
-
     @staticmethod
     def _distribution(df: pd.DataFrame, metadata: dict) -> dict:
-        numerical_cols = [c for c in metadata.get("numerical_columns", []) if c in df.columns]
-        categorical_cols = [c for c in metadata.get("categorical_columns", []) if c in df.columns]
+        numerical_cols = [
+            c for c in metadata.get("numerical_columns", [])
+            if c in df.columns
+        ] or [
+            c for c in df.columns
+            if pd.api.types.is_numeric_dtype(df[c]) and not pd.api.types.is_bool_dtype(df[c])
+        ]
+        categorical_cols = [
+            c for c in metadata.get("categorical_columns", [])
+            if c in df.columns
+        ] or [
+            c for c in df.columns
+            if c not in numerical_cols
+        ]
 
         numerical_dist: dict[str, Any] = {}
         for col in numerical_cols:
             series = df[col].dropna()
             if series.empty:
                 continue
-            # 10-bin histogram
             try:
                 counts, edges = np.histogram(series, bins=10)
                 histogram = {
@@ -268,13 +457,15 @@ class EDAEngine:
             "categorical": categorical_dist,
         }
 
-    # ═══════════════════════════════════════════════════════════════════════
-    #  Module 5 — Correlation analysis
-    # ═══════════════════════════════════════════════════════════════════════
-
     @staticmethod
     def _correlation(df: pd.DataFrame, metadata: dict) -> dict:
-        numerical_cols = [c for c in metadata.get("numerical_columns", []) if c in df.columns]
+        numerical_cols = [
+            c for c in metadata.get("numerical_columns", [])
+            if c in df.columns
+        ] or [
+            c for c in df.columns
+            if pd.api.types.is_numeric_dtype(df[c]) and not pd.api.types.is_bool_dtype(df[c])
+        ]
 
         if len(numerical_cols) < 2:
             return {"available": False, "reason": "Need at least 2 numerical columns"}
@@ -288,7 +479,6 @@ class EDAEngine:
         except Exception as exc:
             return {"available": False, "reason": str(exc)}
 
-        # Find highly correlated pairs
         high_pairs = []
         for i, col1 in enumerate(numerical_cols):
             for j, col2 in enumerate(numerical_cols):
@@ -304,7 +494,6 @@ class EDAEngine:
                     })
         high_pairs.sort(key=lambda x: abs(x["correlation"]), reverse=True)
 
-        # Serialise the full matrix
         corr_dict: dict[str, dict[str, float | None]] = {}
         for col in numerical_cols:
             corr_dict[col] = {
@@ -319,13 +508,15 @@ class EDAEngine:
             "num_high_pairs": len(high_pairs),
         }
 
-    # ═══════════════════════════════════════════════════════════════════════
-    #  Module 6 — Outlier summary
-    # ═══════════════════════════════════════════════════════════════════════
-
     @staticmethod
     def _outlier_summary(df: pd.DataFrame, metadata: dict) -> dict:
-        numerical_cols = [c for c in metadata.get("numerical_columns", []) if c in df.columns]
+        numerical_cols = [
+            c for c in metadata.get("numerical_columns", [])
+            if c in df.columns
+        ] or [
+            c for c in df.columns
+            if pd.api.types.is_numeric_dtype(df[c]) and not pd.api.types.is_bool_dtype(df[c])
+        ]
         per_column: dict[str, Any] = {}
 
         for col in numerical_cols:
@@ -333,7 +524,6 @@ class EDAEngine:
             if len(series) < 10:
                 continue
 
-            # IQR method
             q1 = float(series.quantile(0.25))
             q3 = float(series.quantile(0.75))
             iqr = q3 - q1
@@ -345,7 +535,6 @@ class EDAEngine:
                 iqr_outliers = 0
                 lower = upper = float(series.iloc[0])
 
-            # Z-score method
             mean = float(series.mean())
             std = float(series.std())
             if std > 0:
@@ -372,88 +561,9 @@ class EDAEngine:
             "per_column": per_column,
         }
 
-    # ═══════════════════════════════════════════════════════════════════════
-    #  Module 7 — Target analysis
-    # ═══════════════════════════════════════════════════════════════════════
-
     @staticmethod
-    def _target_analysis(
-        df: pd.DataFrame,
-        target_column: str,
-        metadata: dict,
-    ) -> dict:
-        target = df[target_column].dropna()
-        numerical_cols = [
-            c for c in metadata.get("numerical_columns", [])
-            if c in df.columns and c != target_column
-        ]
-
-        # Is it categorical or continuous?
-        nunique = int(target.nunique())
-        is_classification = (
-            nunique <= 25
-            or target.dtype == object
-            or str(target.dtype) in ("category", "bool")
-        )
-
-        result: dict[str, Any] = {
-            "available": True,
-            "target_column": target_column,
-            "num_rows": int(len(target)),
-            "missing": int(df[target_column].isnull().sum()),
-            "nunique": nunique,
-            "inferred_task": "classification" if is_classification else "regression",
-        }
-
-        if is_classification:
-            vc = target.value_counts()
-            class_dist = {str(k): int(v) for k, v in vc.items()}
-            class_pct = {str(k): _safe_float(v / len(target) * 100) for k, v in vc.items()}
-            majority = int(vc.iloc[0])
-            minority = int(vc.iloc[-1])
-            ratio = _safe_float(majority / max(minority, 1))
-
-            result.update({
-                "class_distribution": class_dist,
-                "class_pct": class_pct,
-                "num_classes": len(vc),
-                "majority_class": str(vc.index[0]),
-                "minority_class": str(vc.index[-1]),
-                "imbalance_ratio": ratio,
-                "is_balanced": ratio <= 3.0,
-            })
-        else:
-            result.update({
-                "mean": _safe_float(target.mean()),
-                "std": _safe_float(target.std()),
-                "min": _safe_float(target.min()),
-                "max": _safe_float(target.max()),
-                "median": _safe_float(target.median()),
-                "skewness": _safe_float(target.skew()),
-            })
-
-        # Feature-target correlation (numerical only)
-        if numerical_cols:
-            correlations: dict[str, float | None] = {}
-            for col in numerical_cols:
-                try:
-                    if is_classification and target.dtype not in (np.float64, np.int64):
-                        # skip if target is categorical text
-                        continue
-                    corr = _safe_float(df[col].corr(df[target_column]))
-                    correlations[col] = corr
-                except Exception:
-                    correlations[col] = None
-
-            # Top 10 by absolute value
-            top_corr = sorted(
-                [(k, v) for k, v in correlations.items() if v is not None],
-                key=lambda x: abs(x[1]),
-                reverse=True,
-            )[:10]
-            result["feature_target_correlation"] = {k: v for k, v in top_corr}
-
-        return result
+    def _target_analysis(df: pd.DataFrame, target_column: str, metadata: dict) -> dict:
+        return compute_target_analysis(df, target_column=target_column, metadata=metadata)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

@@ -213,15 +213,30 @@ async function handleDatasetSelect(datasetId) {
     const targetSel = document.getElementById("ml-target-col");
     if (targetSel) {
       targetSel.innerHTML = '<option value="">Select target column...</option>';
-      data.columns.forEach(col => {
+    }
+    const edaTargetSel = document.getElementById("eda-target-col-select");
+    if (edaTargetSel) {
+      edaTargetSel.innerHTML = '<option value="">(Auto-detect target)</option>';
+    }
+
+    data.columns.forEach(col => {
+      if (targetSel) {
         const opt = document.createElement("option");
         opt.value = col;
         opt.textContent = col;
         if (col.toLowerCase() === "target" || col.toLowerCase() === "survived") opt.selected = true;
         targetSel.appendChild(opt);
-      });
-      if (targetSel.value) detectTaskType(targetSel.value);
-    }
+      }
+
+      if (edaTargetSel) {
+        const edaOpt = document.createElement("option");
+        edaOpt.value = col;
+        edaOpt.textContent = col;
+        if (col.toLowerCase() === "target" || col.toLowerCase() === "survived") edaOpt.selected = true;
+        edaTargetSel.appendChild(edaOpt);
+      }
+    });
+    if (targetSel && targetSel.value) detectTaskType(targetSel.value);
 
     renderDatasetPreviewTable(data.columns, data.preview);
   } catch (err) {
@@ -340,65 +355,473 @@ async function runValidation() {
   }
 }
 
-// ── EDA ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// ── ENHANCED EDA ENGINE (11-Tab Controller & Plotly Interactive Visualizer) ──
+// ═══════════════════════════════════════════════════════════════════════════════
+
+state.edaData = null;
+state.currentEDAInsights = [];
+
+function switchEDASubtab(subtabId) {
+  // Update nav buttons
+  document.querySelectorAll(".eda-subtab-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+  const clickedBtn = Array.from(document.querySelectorAll(".eda-subtab-btn")).find(b => b.getAttribute("onclick")?.includes(subtabId));
+  if (clickedBtn) clickedBtn.classList.add("active");
+
+  // Update views
+  document.querySelectorAll(".eda-section-view").forEach(sec => sec.classList.remove("active"));
+  const targetSec = document.getElementById(`eda-sec-${subtabId}`);
+  if (targetSec) targetSec.classList.add("active");
+
+  // Re-trigger Plotly resize if needed
+  if (window.Plotly) {
+    window.dispatchEvent(new Event("resize"));
+  }
+}
+
 async function runEDA() {
+  return runEnhancedEDA();
+}
+
+async function runEnhancedEDA() {
   if (!state.activeDatasetId) return showToast("Select a dataset first", "info");
-  showToast("Computing full Exploratory Data Analysis...", "info");
+  const btn = document.getElementById("btn-run-eda");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="loading-spinner"></span> Computing EDA...`;
+  }
+  showToast("Running automated EDA Engine with full statistical audits...", "info");
 
   try {
-    const res = await fetch(`/api/eda/run/${state.activeDatasetId}`, { method: "POST" });
+    const targetCol = document.getElementById("eda-target-col-select")?.value || "";
+    const taskOverride = document.getElementById("eda-target-task-override")?.value || "";
+    let url = `/api/eda/run/${state.activeDatasetId}?`;
+    if (targetCol) url += `target_column=${encodeURIComponent(targetCol)}&`;
+    if (taskOverride) url += `task_type=${encodeURIComponent(taskOverride)}`;
+
+    const res = await fetch(url, { method: "POST" });
     if (!res.ok) throw new Error(await res.text());
     const payload = await res.json();
-    renderEDAResults(payload.eda);
-    showToast("EDA analysis generated!", "success");
+    state.edaData = payload.eda;
+    renderEDAResults(state.edaData);
+    showToast("EDA analysis and interactive visualisations ready!", "success");
   } catch (err) {
-    showToast(`EDA failed: ${err.message}`, "error");
+    showToast(`EDA calculation failed: ${err.message}`, "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = "▶ Run Complete EDA";
+    }
   }
 }
 
 function renderEDAResults(eda) {
-  // Overview metrics
-  const overviewBox = document.getElementById("eda-overview-box");
-  if (overviewBox) {
-    const shape = eda.shape || {};
-    const numCount = Object.keys(eda.statistics?.numerical || {}).length;
-    overviewBox.innerHTML = `
-      <div style="display:flex; gap:14px; flex-wrap:wrap; width:100%;">
-        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:10px 16px;">
-          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim); text-transform:uppercase;">Rows × Cols:</span>
-          <strong style="color:#ffffff; font-family:var(--font-mono); margin-left:6px;">${shape.rows ?? 0} × ${shape.columns ?? 0}</strong>
-        </div>
-        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:10px 16px;">
-          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim); text-transform:uppercase;">Numeric Features:</span>
-          <strong style="color:var(--accent-cyan); font-family:var(--font-mono); margin-left:6px;">${numCount}</strong>
-        </div>
-        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:10px 16px;">
-          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim); text-transform:uppercase;">Memory Footprint:</span>
-          <strong style="color:var(--accent-emerald-light); font-family:var(--font-mono); margin-left:6px;">${eda.memory_usage_mb ? eda.memory_usage_mb.toFixed(2) + ' MB' : '< 1 MB'}</strong>
-        </div>
+  if (!eda) return;
+
+  // 1. Overview
+  renderOverviewSection(eda.overview || {});
+
+  // 2. Quality
+  renderQualitySection(eda.quality || {});
+
+  // 3. Statistics
+  renderStatisticsSection(eda.statistics || {});
+
+  // 4. Univariate
+  populateUnivariateControls(eda);
+
+  // 5. Bivariate
+  populateBivariateControls(eda);
+
+  // 6. Multivariate
+  renderMultivariateSection(eda);
+
+  // 7. Outliers
+  renderOutliersSection(eda);
+
+  // 8. Target
+  renderTargetSection(eda.target_analysis || {});
+
+  // 9. Features
+  renderFeaturesSection(eda.features || {});
+
+  // 10. AI Insights
+  renderInsightsSection(eda.insights || []);
+
+  // Top overview summary text
+  const box = document.getElementById("eda-overview-box");
+  if (box && eda.overview) {
+    const ov = eda.overview;
+    box.innerHTML = `
+      <span>📐 <strong>Dimensions:</strong> ${ov.num_rows?.toLocaleString() ?? 0} rows × ${ov.num_columns ?? 0} columns</span>
+      <span>❤️ <strong>Health Score:</strong> <span style="color:#34d399; font-weight:700;">${ov.health_score ?? 100}/100</span> (${ov.health_grade ?? 'Good'})</span>
+      <span>⚠️ <strong>Missing Data:</strong> ${ov.missing_pct ?? 0}%</span>
+      <span>📑 <strong>Duplicate Rows:</strong> ${ov.duplicate_rows ?? 0}</span>
+      <span>💾 <strong>Memory:</strong> ${ov.memory_mb ?? 0} MB</span>
+    `;
+  }
+}
+
+function renderOverviewSection(ov) {
+  const healthVal = document.getElementById("eda-health-val");
+  const healthBadge = document.getElementById("eda-health-badge");
+  if (healthVal) healthVal.innerText = `${ov.health_score ?? '--'} / 100`;
+  if (healthBadge) {
+    const gr = ov.health_grade || "Good";
+    healthBadge.innerText = `${gr.toUpperCase()} HEALTH`;
+    healthBadge.className = `badge badge-${gr === 'Excellent' || gr === 'Good' ? 'valid' : 'invalid'}`;
+  }
+
+  const dimVal = document.getElementById("eda-dimensions-val");
+  if (dimVal) dimVal.innerText = `${ov.num_rows?.toLocaleString() ?? 0} × ${ov.num_columns ?? 0}`;
+  const cellsVal = document.getElementById("eda-cells-val");
+  if (cellsVal) cellsVal.innerText = `${ov.total_cells?.toLocaleString() ?? 0} total cells`;
+
+  const missVal = document.getElementById("eda-missing-val");
+  if (missVal) missVal.innerText = `${ov.total_missing_cells?.toLocaleString() ?? 0} (${ov.missing_pct ?? 0}%)`;
+
+  const memVal = document.getElementById("eda-memory-val");
+  if (memVal) memVal.innerText = `${ov.memory_mb ?? 0} MB`;
+  const dupVal = document.getElementById("eda-dup-rows-val");
+  if (dupVal) dupVal.innerText = `${ov.duplicate_rows ?? 0} duplicate rows`;
+
+  // Column types breakdown
+  const typesBox = document.getElementById("eda-col-types-breakdown");
+  if (typesBox) {
+    typesBox.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
+        <span>🔢 Numerical Features</span>
+        <strong>${ov.num_numerical ?? (ov.numerical_columns?.length || 0)}</strong>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
+        <span>🏷️ Categorical Features</span>
+        <strong>${ov.num_categorical ?? (ov.categorical_columns?.length || 0)}</strong>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
+        <span>🔘 Boolean Features</span>
+        <strong>${ov.num_boolean ?? (ov.boolean_columns?.length || 0)}</strong>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
+        <span>📅 Datetime Features</span>
+        <strong>${ov.num_datetime ?? (ov.datetime_columns?.length || 0)}</strong>
       </div>
     `;
   }
 
-  // Statistics Table
-  const numStats = eda.statistics?.numerical || {};
-  const tbody = Object.entries(numStats).map(([col, s]) => `
-    <tr>
-      <td><strong style="color:#ffffff;">${col}</strong></td>
-      <td style="font-family:var(--font-mono);">${s.mean?.toFixed(2) ?? '-'}</td>
-      <td style="font-family:var(--font-mono);">${s.std?.toFixed(2) ?? '-'}</td>
-      <td style="font-family:var(--font-mono);">${s.min?.toFixed(2) ?? '-'}</td>
-      <td style="font-family:var(--font-mono);">${s['25%']?.toFixed(2) ?? '-'}</td>
-      <td style="font-family:var(--font-mono);">${s['50%']?.toFixed(2) ?? '-'}</td>
-      <td style="font-family:var(--font-mono);">${s['75%']?.toFixed(2) ?? '-'}</td>
-      <td style="font-family:var(--font-mono);">${s.max?.toFixed(2) ?? '-'}</td>
-      <td style="font-family:var(--font-mono);">${s.skewness?.toFixed(2) ?? '-'}</td>
-    </tr>
-  `).join("");
-  const statsTbody = document.querySelector("#eda-stats-table tbody");
-  if (statsTbody) statsTbody.innerHTML = tbody;
+  // Integrity summary
+  const intBox = document.getElementById("eda-integrity-summary");
+  if (intBox) {
+    const dupCols = ov.duplicate_columns_count ?? 0;
+    const constCols = ov.constant_columns_count ?? 0;
+    intBox.innerHTML = `
+      <div style="display:flex; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
+        <span>Exact Duplicate Rows</span>
+        <span class="badge ${ov.duplicate_rows > 0 ? 'badge-warning' : 'badge-valid'}">${ov.duplicate_rows ?? 0} (${ov.duplicate_rows_pct ?? 0}%)</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
+        <span>Duplicate / Identical Columns</span>
+        <span class="badge ${dupCols > 0 ? 'badge-warning' : 'badge-valid'}">${dupCols} detected</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
+        <span>Zero-Variance Constant Columns</span>
+        <span class="badge ${constCols > 0 ? 'badge-invalid' : 'badge-valid'}">${constCols} detected</span>
+      </div>
+    `;
+  }
+}
 
-  // Correlation Matrix
+function renderQualitySection(qual) {
+  const badge = document.getElementById("eda-quality-meter-badge");
+  if (badge) {
+    const sc = qual.quality_score ?? 100;
+    badge.innerHTML = `<span class="badge ${sc >= 80 ? 'badge-success' : sc >= 60 ? 'badge-warning' : 'badge-critical'}">Quality Score: ${sc}/100 (${qual.critical_issues ?? 0} Critical, ${qual.warning_issues ?? 0} Warnings)</span>`;
+  }
+
+  // Issues table
+  const tbody = document.querySelector("#eda-quality-issues-table tbody");
+  if (tbody) {
+    const issues = qual.issues || [];
+    if (issues.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#34d399; padding:20px;">🛡️ Clean dataset! No structural or quality defects detected.</td></tr>';
+    } else {
+      tbody.innerHTML = issues.map(i => {
+        const sev = i.severity || "info";
+        const bCls = sev === 'critical' ? 'badge-critical' : sev === 'warning' ? 'badge-warning' : 'badge-info';
+        return `
+          <tr>
+            <td><span class="badge ${bCls}">${sev.toUpperCase()}</span></td>
+            <td><strong>${i.column || 'Dataset'}</strong></td>
+            <td><code>${i.type}</code></td>
+            <td>${i.message}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+  }
+
+  // Recommendations list
+  const recBox = document.getElementById("eda-quality-recommendations-list");
+  if (recBox) {
+    const recs = qual.recommendations || [];
+    if (recs.length === 0) {
+      recBox.innerHTML = '<span style="color:#34d399; font-size:13px;">No data quality repairs needed.</span>';
+    } else {
+      recBox.innerHTML = recs.map(r => `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
+          <div>
+            <strong style="color:#f8fafc; font-size:13px;">${r.column ? `Column [${r.column}]` : 'Dataset'}:</strong>
+            <div style="color:var(--text-muted); font-size:12px; margin-top:2px;">${r.reason}</div>
+          </div>
+          <span class="badge ${r.priority === 'high' ? 'badge-critical' : 'badge-warning'}">${(r.priority || 'medium').toUpperCase()}</span>
+        </div>
+      `).join("");
+    }
+  }
+}
+
+function renderStatisticsSection(stats) {
+  // Numerical stats
+  const numStats = stats.numerical || {};
+  const tbodyNum = document.querySelector("#eda-stats-table tbody");
+  if (tbodyNum) {
+    const rows = Object.entries(numStats).map(([col, s]) => `
+      <tr>
+        <td><strong>${col}</strong></td>
+        <td>${s.count?.toLocaleString() ?? '-'}</td>
+        <td>${s.mean !== null && s.mean !== undefined ? s.mean.toFixed(2) : '-'}</td>
+        <td>${s.std !== null && s.std !== undefined ? s.std.toFixed(2) : '-'}</td>
+        <td>${s.min !== null && s.min !== undefined ? s.min.toFixed(2) : '-'}</td>
+        <td>${(s.p25 ?? s['25%']) !== null && (s.p25 ?? s['25%']) !== undefined ? (s.p25 ?? s['25%']).toFixed(2) : '-'}</td>
+        <td>${s.median !== null && s.median !== undefined ? s.median.toFixed(2) : '-'}</td>
+        <td>${(s.p75 ?? s['75%']) !== null && (s.p75 ?? s['75%']) !== undefined ? (s.p75 ?? s['75%']).toFixed(2) : '-'}</td>
+        <td>${s.max !== null && s.max !== undefined ? s.max.toFixed(2) : '-'}</td>
+        <td>${s.skewness !== null && s.skewness !== undefined ? s.skewness.toFixed(2) : '-'}</td>
+      </tr>
+    `).join("");
+    tbodyNum.innerHTML = rows || '<tr><td colspan="10" style="text-align:center; color:var(--text-muted);">No numerical columns.</td></tr>';
+  }
+
+  // Categorical stats
+  const catStats = stats.categorical || {};
+  const tbodyCat = document.querySelector("#eda-cat-stats-table tbody");
+  if (tbodyCat) {
+    const rows = Object.entries(catStats).map(([col, s]) => `
+      <tr>
+        <td><strong>${col}</strong></td>
+        <td>${s.count?.toLocaleString() ?? '-'}</td>
+        <td>${s.nunique ?? '-'}</td>
+        <td><code>${s.top_value ?? '-'}</code></td>
+        <td>${s.top_freq?.toLocaleString() ?? '-'}</td>
+        <td>${((s.top_freq / Math.max(s.count, 1)) * 100).toFixed(1)}%</td>
+      </tr>
+    `).join("");
+    tbodyCat.innerHTML = rows || '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No categorical columns.</td></tr>';
+  }
+}
+
+function populateUnivariateControls(eda) {
+  const sel = document.getElementById("eda-uni-col-select");
+  if (!sel) return;
+
+  const numCols = Object.keys(eda.statistics?.numerical || {});
+  const catCols = Object.keys(eda.statistics?.categorical || {});
+  const allCols = [...numCols, ...catCols];
+
+  sel.innerHTML = allCols.map(c => `<option value="${c}">${c} (${numCols.includes(c) ? 'num' : 'cat'})</option>`).join("");
+  if (allCols.length > 0) {
+    renderUnivariateSelected();
+  }
+}
+
+async function renderUnivariateSelected() {
+  if (!state.activeDatasetId) return;
+  const col = document.getElementById("eda-uni-col-select")?.value;
+  const chartType = document.getElementById("eda-uni-chart-type")?.value || "hist_kde";
+  if (!col) return;
+
+  try {
+    // 1. Plotly interactive chart
+    const res = await fetch(`/api/eda/${state.activeDatasetId}/chart/${chartType}?column=${encodeURIComponent(col)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (window.Plotly && data.figure) {
+        Plotly.newPlot("eda-univariate-plot", data.figure.data, data.figure.layout, { responsive: true, displayModeBar: true });
+      }
+    }
+
+    // 2. Column detail metrics
+    const detailRes = await fetch(`/api/eda/${state.activeDatasetId}/univariate/detail?column=${encodeURIComponent(col)}`);
+    if (detailRes.ok) {
+      const det = await detailRes.json();
+      const d = det.result?.data || {};
+      const container = document.getElementById("eda-uni-stats-cards");
+      if (container) {
+        if (det.result?.type === "numerical") {
+          container.innerHTML = `
+            <div class="kpi-card"><div><div class="kpi-label">Mean</div><div class="kpi-val">${d.mean !== null ? d.mean.toFixed(2) : '-'}</div></div></div>
+            <div class="kpi-card"><div><div class="kpi-label">Median</div><div class="kpi-val">${d.median !== null ? d.median.toFixed(2) : '-'}</div></div></div>
+            <div class="kpi-card"><div><div class="kpi-label">Std Dev</div><div class="kpi-val">${d.std !== null ? d.std.toFixed(2) : '-'}</div></div></div>
+            <div class="kpi-card"><div><div class="kpi-label">Skewness</div><div class="kpi-val">${d.skewness !== null ? d.skewness.toFixed(2) : '-'}</div><span class="badge ${d.is_normal ? 'badge-valid' : 'badge-warning'}">${d.is_normal ? 'Normal' : 'Skewed'}</span></div></div>
+            <div class="kpi-card"><div><div class="kpi-label">IQR Bounds</div><div class="kpi-val">${d.iqr !== null ? d.iqr.toFixed(2) : '-'}</div></div></div>
+            <div class="kpi-card"><div><div class="kpi-label">Outliers (IQR)</div><div class="kpi-val">${d.box_plot?.outlier_count ?? 0} (${d.box_plot?.outlier_pct ?? 0}%)</div></div></div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="kpi-card"><div><div class="kpi-label">Unique Levels</div><div class="kpi-val">${d.nunique ?? 0}</div></div></div>
+            <div class="kpi-card"><div><div class="kpi-label">Top Category</div><div class="kpi-val">${d.top_value ?? '-'}</div></div></div>
+            <div class="kpi-card"><div><div class="kpi-label">Top Frequency</div><div class="kpi-val">${d.top_freq ?? 0} (${d.top_pct ?? 0}%)</div></div></div>
+            <div class="kpi-card"><div><div class="kpi-label">Missing</div><div class="kpi-val">${d.missing ?? 0} (${d.missing_pct ?? 0}%)</div></div></div>
+          `;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Univariate render error:", err);
+  }
+}
+
+function populateBivariateControls(eda) {
+  const sel1 = document.getElementById("eda-biv-col1-select");
+  const sel2 = document.getElementById("eda-biv-col2-select");
+  if (!sel1 || !sel2) return;
+
+  const numCols = Object.keys(eda.statistics?.numerical || {});
+  const catCols = Object.keys(eda.statistics?.categorical || {});
+  const allCols = [...numCols, ...catCols];
+
+  sel1.innerHTML = allCols.map(c => `<option value="${c}">${c}</option>`).join("");
+  sel2.innerHTML = allCols.map(c => `<option value="${c}">${c}</option>`).join("");
+
+  if (allCols.length >= 2) {
+    sel1.selectedIndex = 0;
+    sel2.selectedIndex = 1;
+    renderBivariateSelected();
+  }
+
+  // Top pairs table
+  const tbody = document.querySelector("#eda-biv-top-pairs-table tbody");
+  if (tbody) {
+    const pairs = eda.bivariate?.top_pairwise_associations || [];
+    tbody.innerHTML = pairs.slice(0, 10).map(p => `
+      <tr>
+        <td><strong>${p.col1}</strong></td>
+        <td><strong>${p.col2}</strong></td>
+        <td><code>${p.metric.toUpperCase()}</code></td>
+        <td style="color:${Math.abs(p.score) > 0.7 ? '#34d399' : 'inherit'}">${p.score?.toFixed(3)}</td>
+        <td><button class="btn btn-secondary btn-sm" onclick="setBivariatePair('${p.col1}', '${p.col2}')">View</button></td>
+      </tr>
+    `).join("");
+  }
+}
+
+function setBivariatePair(c1, c2) {
+  const sel1 = document.getElementById("eda-biv-col1-select");
+  const sel2 = document.getElementById("eda-biv-col2-select");
+  if (sel1 && sel2) {
+    sel1.value = c1;
+    sel2.value = c2;
+    renderBivariateSelected();
+    switchEDASubtab("bivariate");
+  }
+}
+
+async function renderBivariateSelected() {
+  if (!state.activeDatasetId) return;
+  const col1 = document.getElementById("eda-biv-col1-select")?.value;
+  const col2 = document.getElementById("eda-biv-col2-select")?.value;
+  if (!col1 || !col2 || col1 === col2) return;
+
+  try {
+    const res = await fetch(`/api/eda/${state.activeDatasetId}/bivariate/pair?col1=${encodeURIComponent(col1)}&col2=${encodeURIComponent(col2)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const r = data.result || {};
+
+    const infoBox = document.getElementById("eda-biv-relationship-info");
+    let chartType = "scatter";
+
+    if (r.relationship_type === "numerical_vs_numerical") {
+      chartType = "scatter";
+      if (infoBox) {
+        infoBox.innerHTML = `
+          <span class="badge badge-info">Numerical vs Numerical</span>
+          Pearson r: <strong>${r.pearson?.correlation?.toFixed(3) ?? '-'}</strong> (p=${r.pearson?.p_value?.toFixed(4) ?? '-'}) |
+          Spearman r: <strong>${r.spearman?.correlation?.toFixed(3) ?? '-'}</strong> |
+          Trend: <code>${r.trendline?.formula ?? ''}</code>
+        `;
+      }
+    } else if (r.relationship_type === "numerical_vs_categorical") {
+      chartType = "grouped_box";
+      if (infoBox) {
+        infoBox.innerHTML = `
+          <span class="badge badge-warning">Numerical vs Categorical</span>
+          One-Way ANOVA F: <strong>${r.anova?.f_statistic?.toFixed(2) ?? '-'}</strong> (p=${r.anova?.p_value?.toFixed(4) ?? '-'}) |
+          Effect Size (Eta²): <strong>${r.anova?.eta_squared?.toFixed(3) ?? '-'} (${r.anova?.effect_size ?? '-'})</strong>
+        `;
+      }
+    } else {
+      chartType = "stacked_bar";
+      if (infoBox) {
+        infoBox.innerHTML = `
+          <span class="badge badge-algo">Categorical vs Categorical</span>
+          Chi-Square: <strong>${r.chi_square?.statistic?.toFixed(2) ?? '-'}</strong> (p=${r.chi_square?.p_value?.toFixed(4) ?? '-'}) |
+          Cramer's V: <strong>${r.chi_square?.cramers_v?.toFixed(3) ?? '-'} (${r.chi_square?.strength ?? '-'})</strong>
+        `;
+      }
+    }
+
+    // Load Plotly chart
+    const chartRes = await fetch(`/api/eda/${state.activeDatasetId}/chart/${chartType}?col1=${encodeURIComponent(col1)}&col2=${encodeURIComponent(col2)}`);
+    if (chartRes.ok) {
+      const chartData = await chartRes.json();
+      if (window.Plotly && chartData.figure) {
+        Plotly.newPlot("eda-bivariate-plot", chartData.figure.data, chartData.figure.layout, { responsive: true, displayModeBar: true });
+      }
+    }
+  } catch (err) {
+    console.error("Bivariate render error:", err);
+  }
+}
+
+async function renderMultivariateSection(eda) {
+  if (!state.activeDatasetId) return;
+
+  // Correlation heatmap
+  try {
+    const res = await fetch(`/api/eda/${state.activeDatasetId}/chart/corr_heatmap`);
+    if (res.ok) {
+      const d = await res.json();
+      if (window.Plotly && d.figure) {
+        Plotly.newPlot("eda-heatmap-plot", d.figure.data, d.figure.layout, { responsive: true, displayModeBar: true });
+      }
+    }
+  } catch (e) {}
+
+  // PCA plot
+  try {
+    const res = await fetch(`/api/eda/${state.activeDatasetId}/chart/pca`);
+    if (res.ok) {
+      const d = await res.json();
+      if (window.Plotly && d.figure) {
+        Plotly.newPlot("eda-pca-plot", d.figure.data, d.figure.layout, { responsive: true, displayModeBar: true });
+      }
+    }
+  } catch (e) {}
+
+  // VIF plot
+  try {
+    const res = await fetch(`/api/eda/${state.activeDatasetId}/chart/vif`);
+    if (res.ok) {
+      const d = await res.json();
+      if (window.Plotly && d.figure) {
+        Plotly.newPlot("eda-vif-plot", d.figure.data, d.figure.layout, { responsive: true, displayModeBar: true });
+      }
+    }
+  } catch (e) {}
+
+  // Full table
   const corr = eda.correlation?.matrix || {};
   const cols = Object.keys(corr);
   const corrTable = document.getElementById("eda-corr-table");
@@ -415,6 +838,197 @@ function renderEDAResults(eda) {
     corrTable.innerHTML = thead + tbodyCorr;
   }
 }
+
+function renderOutliersSection(eda) {
+  const out = eda.outliers || {};
+  const methods = out.methods_comparison || [];
+  const tbody = document.querySelector("#eda-outlier-methods-table tbody");
+  if (tbody) {
+    tbody.innerHTML = methods.map(m => `
+      <tr>
+        <td><strong>${m.method}</strong></td>
+        <td>${m.outlier_count?.toLocaleString() ?? 0}</td>
+        <td>${m.outlier_pct?.toFixed(2) ?? 0}%</td>
+        <td>${m.affected_columns ?? 0}</td>
+        <td><span style="font-size:12px; color:var(--text-muted);">${m.recommendation}</span></td>
+      </tr>
+    `).join("");
+  }
+
+  // Populate outlier inspection column selector
+  const sel = document.getElementById("eda-outlier-col-select");
+  if (sel) {
+    const numCols = Object.keys(eda.statistics?.numerical || {});
+    sel.innerHTML = numCols.map(c => `<option value="${c}">${c}</option>`).join("");
+    if (numCols.length > 0) {
+      renderOutlierScatter();
+    }
+  }
+}
+
+async function renderOutlierScatter() {
+  if (!state.activeDatasetId) return;
+  const col = document.getElementById("eda-outlier-col-select")?.value;
+  if (!col) return;
+
+  try {
+    const res = await fetch(`/api/eda/${state.activeDatasetId}/chart/outlier_scatter?col1=${encodeURIComponent(col)}`);
+    if (res.ok) {
+      const d = await res.json();
+      if (window.Plotly && d.figure) {
+        Plotly.newPlot("eda-outlier-plot", d.figure.data, d.figure.layout, { responsive: true, displayModeBar: true });
+      }
+    }
+  } catch (err) {
+    console.error("Outlier chart error:", err);
+  }
+}
+
+function renderTargetSection(target) {
+  const box = document.getElementById("eda-target-summary-box");
+  if (!target || !target.available) {
+    if (box) {
+      box.innerHTML = `
+        <div style="color:var(--text-muted); font-size:13px; padding:16px; background:rgba(255,255,255,0.02); border-radius:var(--radius-sm);">
+          No target column selected. Choose a target from the dropdown above or select from suggestions: <strong>${(target?.suggested_targets || []).join(', ')}</strong>
+        </div>
+      `;
+    }
+    return;
+  }
+
+  if (box) {
+    box.innerHTML = `
+      <div class="kpi-grid" style="margin-bottom:12px;">
+        <div class="kpi-card"><div><div class="kpi-label">Target Name</div><div class="kpi-val">${target.target_column}</div></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Inferred Task</div><div class="kpi-val" style="text-transform:capitalize;">${target.inferred_task}</div></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Unique Values</div><div class="kpi-val">${target.nunique}</div></div></div>
+        <div class="kpi-card"><div><div class="kpi-label">Imbalance / Skew</div><div class="kpi-val">${target.imbalance_status || (target.skewness ? `Skew: ${target.skewness.toFixed(2)}` : 'N/A')}</div></div></div>
+      </div>
+    `;
+  }
+
+  // Feature correlations table
+  const tbody = document.querySelector("#eda-target-corrs-table tbody");
+  if (tbody) {
+    const corrs = target.feature_target_correlation || {};
+    tbody.innerHTML = Object.entries(corrs).map(([feat, val]) => {
+      const absVal = Math.abs(val || 0);
+      const strength = absVal > 0.7 ? 'Strong Predictor' : absVal > 0.3 ? 'Moderate' : 'Weak';
+      const color = absVal > 0.7 ? '#34d399' : absVal > 0.3 ? '#38bdf8' : 'var(--text-muted)';
+      return `
+        <tr>
+          <td><strong>${feat}</strong></td>
+          <td style="color:${color}; font-weight:600;">${val !== null ? val.toFixed(3) : '-'}</td>
+          <td><span class="badge ${absVal > 0.7 ? 'badge-success' : 'badge-info'}">${strength}</span></td>
+        </tr>
+      `;
+    }).join("");
+  }
+}
+
+function renderFeaturesSection(feat) {
+  // Correlated pairs
+  const tbody = document.querySelector("#eda-high-corr-features-table tbody");
+  if (tbody) {
+    const pairs = feat.highly_correlated_pairs || [];
+    if (pairs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#34d399; padding:16px;">✅ No redundant or collinear feature pairs (|r| >= 0.8) detected.</td></tr>';
+    } else {
+      tbody.innerHTML = pairs.map(p => `
+        <tr>
+          <td><strong>${p.feature1}</strong></td>
+          <td><strong>${p.feature2}</strong></td>
+          <td style="color:#f43f5e; font-weight:700;">${p.correlation?.toFixed(3)}</td>
+          <td><span class="badge badge-critical">${p.severity.toUpperCase()}</span></td>
+          <td style="font-size:12px; color:var(--text-muted);">Drop one feature before training linear models.</td>
+        </tr>
+      `).join("");
+    }
+  }
+
+  // Anomalies list
+  const anomBox = document.getElementById("eda-feature-anomalies-list");
+  if (anomBox) {
+    const lowVar = feat.low_variance_features || [];
+    const leak = feat.potential_leakage_features || [];
+    const cards = [];
+    leak.forEach(l => {
+      cards.push(`
+        <div style="padding:10px 14px; background:rgba(244,63,94,0.1); border-left:3px solid #f43f5e; border-radius:4px;">
+          <strong style="color:#f43f5e;">Target Leakage Risk: [${l.feature}]</strong>
+          <div style="font-size:12px; color:var(--text-muted);">Correlation ${l.correlation_with_target?.toFixed(3)} with target. Verify data collection timeframe.</div>
+        </div>
+      `);
+    });
+    lowVar.forEach(v => {
+      cards.push(`
+        <div style="padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:4px;">
+          <strong style="color:#fbbf24;">Low Variance: [${v.feature}]</strong>
+          <div style="font-size:12px; color:var(--text-muted);">Variance = ${v.variance?.toFixed(6)}. Near-constant information.</div>
+        </div>
+      `);
+    });
+    anomBox.innerHTML = cards.join("") || '<span style="color:#34d399; font-size:13px;">No variance or leakage risks found.</span>';
+  }
+
+  // Recommendations list
+  const recBox = document.getElementById("eda-feature-recommendations-list");
+  if (recBox) {
+    const recs = feat.feature_selection_recommendations || [];
+    recBox.innerHTML = recs.map(r => `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
+        <span style="font-size:13px; color:var(--text-main);">${r.recommendation}</span>
+        <span class="badge ${r.priority === 'critical' || r.priority === 'high' ? 'badge-critical' : 'badge-warning'}">${(r.priority || 'medium').toUpperCase()}</span>
+      </div>
+    `).join("") || '<span style="color:#34d399; font-size:13px;">Feature representation is balanced.</span>';
+  }
+}
+
+function renderInsightsSection(insights) {
+  state.currentEDAInsights = insights;
+  filterEDAInsights("all");
+}
+
+function filterEDAInsights(severity) {
+  const container = document.getElementById("eda-insights-container");
+  if (!container) return;
+
+  const filtered = severity === "all"
+    ? state.currentEDAInsights
+    : state.currentEDAInsights.filter(i => i.severity === severity);
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<span style="color:var(--text-muted); font-size:13px;">No insights found for filter '${severity}'.</span>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(ins => {
+    const sev = ins.severity || "info";
+    const bCls = sev === 'critical' ? 'badge-critical' : sev === 'warning' ? 'badge-warning' : sev === 'success' ? 'badge-success' : 'badge-info';
+    return `
+      <div class="eda-insight-card ${sev}">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <strong style="color:#f8fafc; font-size:14px;">${ins.finding}</strong>
+          <span class="badge ${bCls}">${sev.toUpperCase()}</span>
+        </div>
+        <div style="color:var(--text-muted); font-size:12px; margin-bottom:6px;"><strong>Evidence:</strong> ${ins.evidence}</div>
+        <div style="color:var(--text-dim); font-size:12px; margin-bottom:6px;"><strong>Impact:</strong> ${ins.explanation}</div>
+        <div style="color:#38bdf8; font-size:12px;"><strong>Action Plan:</strong> ${ins.recommendation}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function downloadEDAReport(format) {
+  if (!state.activeDatasetId) return showToast("Select a dataset first", "info");
+  const targetCol = document.getElementById("eda-target-col-select")?.value || "";
+  let url = `/api/eda/${state.activeDatasetId}/export?format=${format}`;
+  if (targetCol) url += `&target_column=${encodeURIComponent(targetCol)}`;
+  showToast(`Preparing ${format.toUpperCase()} report download...`, "info");
+  window.open(url, "_blank");
+}
+
 
 // ── Preprocessing ───────────────────────────────────────────────
 async function runAutoPreprocess() {

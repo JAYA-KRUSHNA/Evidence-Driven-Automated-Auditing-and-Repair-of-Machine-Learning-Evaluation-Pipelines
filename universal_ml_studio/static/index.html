@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
 <body>
   <div class="app-container">
@@ -302,43 +303,413 @@
 
         <!-- ═════════ 4. EDA VIEW ═════════ -->
         <section id="tab-eda" class="view-section">
-          <div class="glass-card" style="margin-bottom:24px;">
-            <div class="card-header">
-              <div class="card-title">
-                <span class="card-title-icon">📈</span> Automated Exploratory Data Analysis
+          <!-- Top Control Header -->
+          <div class="glass-card" style="margin-bottom:20px;">
+            <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+              <div>
+                <div class="card-title">📈 Automated Intelligent EDA Engine</div>
+                <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">
+                  Comprehensive profiling, quality auditing, multivariate distributions, outlier diagnosis, and AI insights.
+                </div>
               </div>
-              <button class="btn btn-primary" onclick="runEDA()">▶ Compute Full EDA</button>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <label class="form-label" style="margin:0; font-size:12px;">Target:</label>
+                  <select id="eda-target-col-select" class="form-select" style="min-width:140px; padding:6px 10px; font-size:12px;">
+                    <option value="">(Auto-detect)</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary" id="btn-run-eda" onclick="runEnhancedEDA()">▶ Run Complete EDA</button>
+              </div>
             </div>
             <div id="eda-overview-box" style="display:flex; gap:20px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
               <span>Select or compute EDA to view summary statistics, correlation matrix, and missing value profiles.</span>
             </div>
           </div>
 
-          <div class="glass-card" style="margin-bottom:24px;">
-            <div class="card-header">
-              <div class="card-title">
-                <span class="card-title-icon">📊</span> Numerical Summary Statistics
+
+          <!-- 11 Sub-Navigation Tabs -->
+          <div class="eda-subtabs-nav" id="eda-subtabs-bar">
+            <button class="eda-subtab-btn active" onclick="switchEDASubtab('overview')">📌 1. Overview</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('quality')">🛡️ 2. Data Quality</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('statistics')">📊 3. Statistics</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('univariate')">📉 4. Univariate</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('bivariate')">🔗 5. Bivariate</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('multivariate')">🌐 6. Multivariate</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('outliers')">🎯 7. Outliers</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('target')">🎯 8. Target</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('features')">⚡ 9. Features</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('insights')">💡 10. AI Insights</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('reports')">📄 11. Export Reports</button>
+          </div>
+
+          <!-- ── Section 1: Overview ── -->
+          <div id="eda-sec-overview" class="eda-section-view active">
+            <div class="kpi-grid" style="margin-bottom:20px;">
+              <div class="kpi-card">
+                <div class="kpi-icon indigo">❤️</div>
+                <div>
+                  <div class="kpi-label">Health Score</div>
+                  <div class="kpi-val" id="eda-health-val">-- / 100</div>
+                  <span class="badge" id="eda-health-badge" style="font-size:11px; margin-top:4px;">Pending</span>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-icon cyan">📊</div>
+                <div>
+                  <div class="kpi-label">Dimensions</div>
+                  <div class="kpi-val" id="eda-dimensions-val">0 × 0</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="eda-cells-val">0 total cells</div>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-icon amber">⚠️</div>
+                <div>
+                  <div class="kpi-label">Missing Values</div>
+                  <div class="kpi-val" id="eda-missing-val">0 (0.0%)</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="eda-missing-cols-val">0 cols affected</div>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-icon emerald">💾</div>
+                <div>
+                  <div class="kpi-label">Memory Usage</div>
+                  <div class="kpi-val" id="eda-memory-val">0.00 MB</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="eda-dup-rows-val">0 duplicate rows</div>
+                </div>
+
               </div>
             </div>
-            <div class="table-wrapper">
-              <table class="data-table" id="eda-stats-table">
-                <thead><tr><th>Column</th><th>Mean</th><th>Std</th><th>Min</th><th>25%</th><th>Median</th><th>75%</th><th>Max</th><th>Skew</th></tr></thead>
-                <tbody></tbody>
-              </table>
+
+            <div class="grid-2col">
+              <div class="glass-card">
+                <div class="card-header"><div class="card-title">📋 Column Type Distribution</div></div>
+                <div id="eda-col-types-breakdown" style="display:flex; flex-direction:column; gap:10px;">
+                  <span style="color:var(--text-muted); font-size:13px;">Run EDA to view classification breakdown.</span>
+                </div>
+              </div>
+
+              <div class="glass-card">
+                <div class="card-header"><div class="card-title">🔍 Dataset Integrity & Deduplication</div></div>
+                <div id="eda-integrity-summary" style="display:flex; flex-direction:column; gap:10px;">
+                  <span style="color:var(--text-muted); font-size:13px;">Checking for duplicate records and redundant features...</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="glass-card">
-            <div class="card-header">
-              <div class="card-title">
-                <span class="card-title-icon">🔗</span> Feature Correlation Heatmap Matrix
+
+          <!-- ── Section 2: Data Quality ── -->
+          <div id="eda-sec-quality" class="eda-section-view">
+            <div class="glass-card" style="margin-bottom:20px;">
+              <div class="card-header">
+                <div class="card-title">🛡️ Automated Data Quality Audit Log</div>
+                <div id="eda-quality-meter-badge"></div>
+              </div>
+              <div class="table-wrapper">
+                <table class="data-table" id="eda-quality-issues-table">
+                  <thead><tr><th>Severity</th><th>Column</th><th>Defect Type</th><th>Description</th></tr></thead>
+                  <tbody><tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Run EDA to analyze data quality.</td></tr></tbody>
+                </table>
               </div>
             </div>
-            <div class="table-wrapper">
-              <table class="data-table" id="eda-corr-table">
-                <thead><tr><th>Feature A</th><th>Feature B</th><th>Correlation</th></tr></thead>
-                <tbody></tbody>
-              </table>
+
+            <div class="glass-card">
+              <div class="card-header"><div class="card-title">💡 Actionable Data Quality Recommendations</div></div>
+              <div id="eda-quality-recommendations-list" style="display:flex; flex-direction:column; gap:10px;">
+                <span style="color:var(--text-muted); font-size:13px;">No recommendations yet.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section 3: Statistics ── -->
+          <div id="eda-sec-statistics" class="eda-section-view">
+            <div class="glass-card" style="margin-bottom:24px;">
+              <div class="card-header"><div class="card-title">📊 Numerical Summary Statistics</div></div>
+              <div class="table-wrapper">
+                <table class="data-table" id="eda-stats-table">
+                  <thead><tr><th>Column</th><th>Count</th><th>Mean</th><th>Std</th><th>Min</th><th>25%</th><th>Median</th><th>75%</th><th>Max</th><th>Skew</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header"><div class="card-title">🏷️ Categorical Summary Statistics</div></div>
+              <div class="table-wrapper">
+                <table class="data-table" id="eda-cat-stats-table">
+                  <thead><tr><th>Column</th><th>Count</th><th>Unique Levels</th><th>Top Category</th><th>Frequency</th><th>Share (%)</th></tr></thead>
+                  <tbody><tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No categorical features.</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section 4: Univariate Analysis ── -->
+          <div id="eda-sec-univariate" class="eda-section-view">
+            <div class="glass-card" style="margin-bottom:20px;">
+              <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label" style="font-size:12px; margin-bottom:2px;">Select Column</label>
+                    <select id="eda-uni-col-select" class="form-select" onchange="renderUnivariateSelected()" style="min-width:180px; font-size:13px;"></select>
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label" style="font-size:12px; margin-bottom:2px;">Chart Type</label>
+                    <select id="eda-uni-chart-type" class="form-select" onchange="renderUnivariateSelected()" style="min-width:160px; font-size:13px;">
+                      <option value="hist_kde">Histogram + KDE</option>
+                      <option value="box">Box Plot (Outliers)</option>
+                      <option value="violin">Violin Distribution</option>
+                      <option value="category_bar">Category Count Bar</option>
+                      <option value="category_donut">Category Donut / Pie</option>
+                    </select>
+                  </div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="renderUnivariateSelected()">🔄 Refresh Chart</button>
+              </div>
+
+              <!-- Canvas for Plotly -->
+              <div id="eda-univariate-plot" style="min-height:380px; width:100%;">
+                <div style="text-align:center; padding:80px 20px; color:var(--text-muted);">Select a column to generate interactive univariate distribution.</div>
+              </div>
+            </div>
+
+            <!-- Detail Cards -->
+            <div class="kpi-grid" id="eda-uni-stats-cards"></div>
+          </div>
+
+          <!-- ── Section 5: Bivariate Analysis ── -->
+          <div id="eda-sec-bivariate" class="eda-section-view">
+            <div class="glass-card" style="margin-bottom:20px;">
+              <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label" style="font-size:12px; margin-bottom:2px;">Feature 1 (X-Axis)</label>
+                    <select id="eda-biv-col1-select" class="form-select" onchange="renderBivariateSelected()" style="min-width:160px; font-size:13px;"></select>
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label" style="font-size:12px; margin-bottom:2px;">Feature 2 (Y-Axis)</label>
+                    <select id="eda-biv-col2-select" class="form-select" onchange="renderBivariateSelected()" style="min-width:160px; font-size:13px;"></select>
+                  </div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="renderBivariateSelected()">⚡ Update Relationship</button>
+              </div>
+
+              <div id="eda-biv-relationship-info" style="margin-bottom:12px; font-size:13px; color:var(--text-muted);"></div>
+              <div id="eda-bivariate-plot" style="min-height:380px; width:100%;">
+                <div style="text-align:center; padding:80px 20px; color:var(--text-muted);">Select feature pair to view scatter, grouped box, or contingency chart.</div>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header"><div class="card-title">🏆 Top Pairwise Statistical Associations</div></div>
+              <div class="table-wrapper">
+                <table class="data-table" id="eda-biv-top-pairs-table">
+                  <thead><tr><th>Feature 1</th><th>Feature 2</th><th>Metric</th><th>Score</th><th>Action</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section 6: Multivariate Analysis ── -->
+          <div id="eda-sec-multivariate" class="eda-section-view">
+            <div class="grid-2col" style="margin-bottom:20px;">
+              <div class="glass-card">
+                <div class="card-header"><div class="card-title">🔗 Correlation Heatmap (Plotly)</div></div>
+                <div id="eda-heatmap-plot" style="min-height:360px; width:100%;"></div>
+              </div>
+              <div class="glass-card">
+                <div class="card-header"><div class="card-title">🌀 PCA 2D Dimensional Projection</div></div>
+                <div id="eda-pca-plot" style="min-height:360px; width:100%;"></div>
+              </div>
+            </div>
+
+            <div class="grid-2col">
+              <div class="glass-card">
+                <div class="card-header"><div class="card-title">⚠️ Multicollinearity (VIF Scores)</div></div>
+                <div id="eda-vif-plot" style="min-height:320px; width:100%;"></div>
+              </div>
+
+              <div class="glass-card">
+                <div class="card-header"><div class="card-title">📋 Full Feature Correlation Matrix</div></div>
+                <div class="table-wrapper">
+                  <table class="data-table" id="eda-corr-table">
+                    <thead><tr><th>Feature Correlation Heatmap Matrix</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section 7: Outlier Detection ── -->
+          <div id="eda-sec-outliers" class="eda-section-view">
+            <div class="glass-card" style="margin-bottom:20px;">
+              <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+                <div>
+                  <div class="card-title">🎯 Multi-Method Outlier Audit</div>
+                  <div style="color:var(--text-muted); font-size:13px;">Compare IQR, Z-Score, Modified Z-Score (MAD), Isolation Forest, and LOF.</div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <label class="form-label" style="margin:0; font-size:12px;">Inspect Column:</label>
+                  <select id="eda-outlier-col-select" class="form-select" onchange="renderOutlierScatter()" style="min-width:150px; font-size:12px;"></select>
+                </div>
+              </div>
+
+              <!-- Outlier Plot -->
+              <div id="eda-outlier-plot" style="min-height:320px; width:100%; margin-bottom:20px;"></div>
+
+              <div class="table-wrapper">
+                <table class="data-table" id="eda-outlier-methods-table">
+                  <thead><tr><th>Detection Algorithm</th><th>Outliers Detected</th><th>Density (%)</th><th>Affected Columns</th><th>Recommended Treatment</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header"><div class="card-title">🛡️ Outlier Treatment Best Practices (Non-Destructive)</div></div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; font-size:13px; color:var(--text-muted);">
+                <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:var(--radius-sm);">
+                  <strong style="color:#38bdf8;">1. Winsorization (Capping)</strong>
+                  <p style="margin-top:6px;">Caps values exceeding 1st / 99th percentiles to boundary values, preserving sample count while eliminating gradient shock.</p>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:var(--radius-sm);">
+                  <strong style="color:#818cf8;">2. Robust Scaling</strong>
+                  <p style="margin-top:6px;">Uses median and IQR instead of mean and standard deviation, preventing outliers from compressing valid feature ranges.</p>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:var(--radius-sm);">
+                  <strong style="color:#34d399;">3. Power Transformations</strong>
+                  <p style="margin-top:6px;">Log1p or Yeo-Johnson transforms heavily skewed tails into standard normal bell curves for linear model convergence.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section 8: Target Analysis ── -->
+          <div id="eda-sec-target" class="eda-section-view">
+            <div class="glass-card" style="margin-bottom:20px;">
+              <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+                <div class="card-title">🎯 Target Variable Diagnostics</div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <label class="form-label" style="margin:0; font-size:12px;">Task Override:</label>
+                  <select id="eda-target-task-override" class="form-select" onchange="runEnhancedEDA()" style="min-width:140px; font-size:12px;">
+                    <option value="">Auto-Detect</option>
+                    <option value="classification">Classification</option>
+                    <option value="regression">Regression</option>
+                  </select>
+                </div>
+              </div>
+              <div id="eda-target-summary-box" style="margin-bottom:16px;"></div>
+              <div id="eda-target-chart" style="min-height:340px; width:100%;"></div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header"><div class="card-title">📈 Feature-Target Predictive Associations</div></div>
+              <div class="table-wrapper">
+                <table class="data-table" id="eda-target-corrs-table">
+                  <thead><tr><th>Feature</th><th>Association Score / Correlation</th><th>Predictive Signal Strength</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section 9: Feature Analysis ── -->
+          <div id="eda-sec-features" class="eda-section-view">
+            <div class="glass-card" style="margin-bottom:20px;">
+              <div class="card-header"><div class="card-title">⚡ Feature Redundancy & Correlation Screening</div></div>
+              <div class="table-wrapper">
+                <table class="data-table" id="eda-high-corr-features-table">
+                  <thead><tr><th>Feature 1</th><th>Feature 2</th><th>Correlation</th><th>Severity</th><th>Advice</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="grid-2col">
+              <div class="glass-card">
+                <div class="card-header"><div class="card-title">⚠️ Low Variance & Leakage Anomalies</div></div>
+                <div id="eda-feature-anomalies-list" style="display:flex; flex-direction:column; gap:10px;">
+                  <span style="color:var(--text-muted); font-size:13px;">No variance anomalies detected.</span>
+                </div>
+              </div>
+
+              <div class="glass-card">
+                <div class="card-header"><div class="card-title">🎯 Prioritized Feature Selection Advice</div></div>
+                <div id="eda-feature-recommendations-list" style="display:flex; flex-direction:column; gap:10px;">
+                  <span style="color:var(--text-muted); font-size:13px;">Run EDA to generate feature advice.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section 10: AI Insights ── -->
+          <div id="eda-sec-insights" class="eda-section-view">
+            <div class="glass-card">
+              <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+                <div>
+                  <div class="card-title">💡 Intelligent Automated EDA Insights Engine</div>
+                  <div style="color:var(--text-muted); font-size:13px;">100% data-driven explanations backed by actual statistical evidence and domain best practices.</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-secondary btn-sm" onclick="filterEDAInsights('all')">All</button>
+                  <button class="btn btn-secondary btn-sm" onclick="filterEDAInsights('critical')">Critical</button>
+                  <button class="btn btn-secondary btn-sm" onclick="filterEDAInsights('warning')">Warning</button>
+                  <button class="btn btn-secondary btn-sm" onclick="filterEDAInsights('success')">Success</button>
+                </div>
+              </div>
+              <div id="eda-insights-container" style="display:flex; flex-direction:column; gap:14px; margin-top:10px;">
+                <span style="color:var(--text-muted); font-size:13px;">Click "Run Complete EDA" to generate deep intelligent insights.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section 11: Export Reports ── -->
+          <div id="eda-sec-reports" class="eda-section-view">
+            <div class="glass-card" style="margin-bottom:20px;">
+              <div class="card-header"><div class="card-title">📄 Export Complete Automated EDA Audit Reports</div></div>
+              <p style="color:var(--text-muted); font-size:13px; line-height:1.6; margin-bottom:20px;">
+                Generate publication-ready diagnostic reports containing executive summaries, quality logs, descriptive distributions, correlation rankings, outlier analyses, and AI recommendations.
+              </p>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px; text-align:center;">
+                  <div style="font-size:32px; margin-bottom:10px;">🌐</div>
+                  <strong style="color:#fff; font-size:15px; display:block; margin-bottom:6px;">HTML Dashboard</strong>
+                  <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Standalone, responsive HTML report with embedded styles and tables.</p>
+                  <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('html')">📥 Download HTML</button>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px; text-align:center;">
+                  <div style="font-size:32px; margin-bottom:10px;">📑</div>
+                  <strong style="color:#fff; font-size:15px; display:block; margin-bottom:6px;">PDF Document</strong>
+                  <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Professional multi-page publication document created via ReportLab.</p>
+                  <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('pdf')">📥 Download PDF</button>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px; text-align:center;">
+                  <div style="font-size:32px; margin-bottom:10px;">📊</div>
+                  <strong style="color:#fff; font-size:15px; display:block; margin-bottom:6px;">Excel Workbook (.xlsx)</strong>
+                  <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Formatted multi-tab spreadsheet with overview, stats, quality, and insights.</p>
+                  <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('excel')">📥 Download Excel</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header"><div class="card-title">📋 Included Diagnostic Sections in Report</div></div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; font-size:13px; color:var(--text-muted);">
+                <div style="display:flex; align-items:center; gap:8px;">✅ Dataset Overview & Health Score</div>
+                <div style="display:flex; align-items:center; gap:8px;">✅ Data Quality Audit & Issues</div>
+                <div style="display:flex; align-items:center; gap:8px;">✅ Numerical Descriptive Statistics</div>
+                <div style="display:flex; align-items:center; gap:8px;">✅ Categorical Value Distributions</div>
+                <div style="display:flex; align-items:center; gap:8px;">✅ Highly Correlated Features</div>
+                <div style="display:flex; align-items:center; gap:8px;">✅ Multi-Method Outlier Audit</div>
+                <div style="display:flex; align-items:center; gap:8px;">✅ Target Variable Diagnostics</div>
+                <div style="display:flex; align-items:center; gap:8px;">✅ Prioritized Action Recommendations</div>
+              </div>
+
             </div>
           </div>
         </section>

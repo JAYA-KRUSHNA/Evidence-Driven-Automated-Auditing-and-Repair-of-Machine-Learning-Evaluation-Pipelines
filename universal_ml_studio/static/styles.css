@@ -1137,3 +1137,96 @@ code, .font-mono, .code-metric {
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   Enhanced EDA Sub-Navigation & Component Styles
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.eda-subtabs-nav {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 8px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 22px;
+  backdrop-filter: blur(12px);
+}
+
+.eda-subtab-btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.eda-subtab-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.eda-subtab-btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(6, 182, 212, 0.25));
+  border: 1px solid rgba(99, 102, 241, 0.45);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.eda-section-view {
+  display: none;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.eda-section-view.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.eda-insight-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.eda-insight-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+.eda-insight-card.critical::before { background: var(--accent-rose); }
+.eda-insight-card.warning::before  { background: var(--accent-amber); }
+.eda-insight-card.info::before     { background: var(--accent-cyan); }
+.eda-insight-card.success::before  { background: var(--accent-emerald); }
+
+.eda-insight-card:hover {
+  background: rgba(30, 41, 59, 0.7);
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.badge-critical { background: rgba(244, 63, 94, 0.2); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); }
+.badge-warning  { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-info     { background: rgba(6, 182, 212, 0.2); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3); }
+.badge-success  { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
