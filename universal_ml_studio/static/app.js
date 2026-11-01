@@ -50,6 +50,9 @@ function showTab(tabName) {
     ml: "AutoML & Model Comparison",
     prediction: "Live Prediction Playground",
     reports: "Audit Reports & Artifacts",
+    auditor: "Pipeline Auditor & Leakage Detection",
+    repair: "Automated Pipeline Repair & Diagnostics",
+    benchmark: "Auditor Benchmark Lab",
   };
   const heading = document.getElementById("page-heading");
   if (heading) heading.innerText = titles[tabName] || "Studio Dashboard";
@@ -1378,3 +1381,306 @@ async function refreshReportsList() {
     console.error(err);
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Pipeline Auditor & Leakage Detection Controller
+// ═══════════════════════════════════════════════════════════════════
+
+async function runPipelineAudit() {
+  if (!state.activeDatasetId) {
+    showToast("Please select a dataset from the Datasets Hub first!", "error");
+    showTab("datasets");
+    return;
+  }
+
+  const btn = document.getElementById("btn-run-audit");
+  const model = document.getElementById("auditor-model-select")?.value || "random_forest";
+  const targetSel = document.getElementById("ml-target-col");
+  const targetCol = targetSel ? targetSel.value : "";
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;"></span> Auditing Pipeline...`;
+  }
+
+  try {
+    let url = `/api/auditor/audit/${state.activeDatasetId}?model_name=${encodeURIComponent(model)}`;
+    if (targetCol) url += `&target_column=${encodeURIComponent(targetCol)}`;
+
+    const res = await fetch(url, { method: "POST" });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+
+    // 1. Update KPIs
+    const scoreVal = document.getElementById("auditor-integrity-val");
+    if (scoreVal) scoreVal.innerText = `${data.integrity_score ?? 100} / 100`;
+
+    const badge = document.getElementById("auditor-integrity-badge");
+    if (badge) {
+      const score = data.integrity_score ?? 100;
+      if (score >= 80) {
+        badge.innerText = "SOUND EVALUATION";
+        badge.className = "badge badge-valid";
+      } else if (score >= 50) {
+        badge.innerText = "MODERATE DEFECT RISK";
+        badge.className = "badge badge-warning";
+      } else {
+        badge.innerText = "CRITICAL LEAKAGE RISK";
+        badge.className = "badge badge-invalid";
+      }
+    }
+
+    const confVal = document.getElementById("auditor-confirmed-val");
+    if (confVal) confVal.innerText = data.summary?.confirmed_count ?? 0;
+    const critVal = document.getElementById("auditor-critical-val");
+    if (critVal) critVal.innerText = `${data.summary?.critical_count ?? 0} critical defects`;
+
+    const suspVal = document.getElementById("auditor-suspected-val");
+    if (suspVal) suspVal.innerText = data.summary?.suspected_count ?? 0;
+    const warnVal = document.getElementById("auditor-warning-val");
+    if (warnVal) warnVal.innerText = `${data.summary?.high_count ?? 0} high / warnings`;
+
+    const metricVal = document.getElementById("auditor-metric-val");
+    const metricLabel = document.getElementById("auditor-metric-label");
+    const bm = data.baseline_metrics || {};
+    const firstKey = Object.keys(bm)[0];
+    if (metricVal && firstKey) {
+      metricVal.innerText = typeof bm[firstKey] === "number" ? bm[firstKey].toFixed(3) : bm[firstKey];
+      if (metricLabel) metricLabel.innerText = `${firstKey.toUpperCase()} (Baseline)`;
+    }
+
+    // 2. Render Findings
+    state.allAuditFindings = data.findings || [];
+    renderAuditFindings(state.allAuditFindings);
+
+    showToast("Pipeline audit complete! Evaluation findings identified.", "success");
+  } catch (err) {
+    showToast(`Audit failed: ${err.message}`, "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = "▶ Run Deep Pipeline Audit";
+    }
+  }
+}
+
+function filterAuditFindings(filter) {
+  if (!state.allAuditFindings) return;
+  if (filter === "all") {
+    renderAuditFindings(state.allAuditFindings);
+  } else if (filter === "critical" || filter === "high") {
+    renderAuditFindings(state.allAuditFindings.filter(f => f.severity === filter));
+  } else {
+    renderAuditFindings(state.allAuditFindings.filter(f => (f.category || "").toLowerCase().includes(filter)));
+  }
+}
+
+function renderAuditFindings(findings) {
+  const container = document.getElementById("auditor-findings-container");
+  if (!container) return;
+
+  if (!findings || findings.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:30px 10px; color:var(--text-muted); background:rgba(255,255,255,0.02); border-radius:var(--radius-sm);">
+        <div style="font-size:32px; margin-bottom:8px;">✅</div>
+        <strong style="color:#ffffff; font-size:14px; display:block; margin-bottom:4px;">No Flaws Found For This Filter</strong>
+        <p style="font-size:12px; margin:0;">The evaluated pipeline satisfies all verification criteria without detected leakage.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = findings.map(f => {
+    const sev = f.severity || "medium";
+    const sevClass = sev === "critical" ? "badge-critical" : (sev === "high" ? "badge-warning" : "badge-info");
+    const confPct = f.confidence ? Math.round(f.confidence * 100) : 95;
+    const cols = (f.affected_columns && f.affected_columns.length)
+      ? f.affected_columns.map(c => `<code style="font-size:11px;">${c}</code>`).join(" ")
+      : '<span style="color:var(--text-muted); font-size:11px;">Pipeline Split</span>';
+
+    return `
+      <div class="eda-insight-card ${sev}" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="badge ${sevClass}">${sev.toUpperCase()}</span>
+            <strong style="color:#ffffff; font-size:14px;">${f.category ? f.category.replace(/_/g, ' ').toUpperCase() : 'AUDIT FINDING'}</strong>
+            <span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text-muted); font-size:10px;">${confPct}% Confidence</span>
+            ${f.auto_correctable ? '<span class="badge badge-success" style="font-size:10px;">⚡ Auto-Correctable</span>' : ''}
+          </div>
+          <span style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono);">${f.finding_id || ''}</span>
+        </div>
+        <p style="color:var(--text-main); font-size:13px; margin:2px 0 6px 0; line-height:1.5;">${f.description || ''}</p>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--text-muted); background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:var(--radius-sm);">
+          <div><strong>Affected Features:</strong> ${cols}</div>
+          ${f.recommendation ? `<div><strong>Action:</strong> <span style="color:var(--accent-cyan);">${f.recommendation}</span></div>` : ''}
+        </div>
+        ${f.auto_correctable ? `
+          <div style="margin-top:6px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-secondary btn-sm" onclick="showTab('repair'); runPipelineRepair();" style="font-size:11px; padding:4px 10px;">
+              ⚡ Fix in Pipeline Repair →
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join("");
+}
+
+function exportAuditFindingsCSV() {
+  window.open("/api/auditor/findings/export", "_blank");
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Pipeline Repair Controller
+// ═══════════════════════════════════════════════════════════════════
+
+async function runPipelineRepair() {
+  if (!state.activeDatasetId) {
+    showToast("Please select a dataset from the Datasets Hub first!", "error");
+    showTab("datasets");
+    return;
+  }
+
+  const btn = document.getElementById("btn-run-repair");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;"></span> Repairing Pipeline...`;
+  }
+
+  try {
+    const res = await fetch(`/api/auditor/repair/${state.activeDatasetId}`, { method: "POST" });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+
+    const banner = document.getElementById("repair-status-banner");
+    if (banner) {
+      banner.innerHTML = `<strong style="color:var(--accent-emerald-light);">Status: ${data.status.toUpperCase()}</strong> — ${data.message || ''} (${data.resolved ?? 0} defects resolved, ${data.unresolved ?? 0} unresolved).`;
+    }
+
+    // Actions count badge
+    const actBadge = document.getElementById("repair-actions-count");
+    if (actBadge) actBadge.innerText = `${(data.actions || []).length} Actions Applied`;
+
+    // Render Actions List
+    const actionsList = document.getElementById("repair-actions-list");
+    if (actionsList) {
+      if (!data.actions || data.actions.length === 0) {
+        actionsList.innerHTML = `<span style="color:var(--text-muted); font-size:13px;">No repair actions were required. The pipeline already adheres to leakage-free evaluation protocols.</span>`;
+      } else {
+        actionsList.innerHTML = data.actions.map((act, i) => `
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong style="color:#ffffff; font-size:13px;">#${i + 1} — ${act.action_type || act.category || 'Correction'}</strong>
+              <div style="color:var(--text-muted); font-size:12px; margin-top:2px;">${act.description || JSON.stringify(act)}</div>
+            </div>
+            <span class="badge badge-success">Applied</span>
+          </div>
+        `).join("");
+      }
+    }
+
+    // Render Metrics Before vs After
+    renderMetricComparisonList("repair-before-metrics-list", data.before_metrics || {});
+    renderMetricComparisonList("repair-after-metrics-list", data.after_metrics || {});
+
+    showToast("Pipeline repair successfully executed!", "success");
+  } catch (err) {
+    showToast(`Pipeline repair failed: ${err.message}`, "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = "⚡ Apply 1-Click Pipeline Repair";
+    }
+  }
+}
+
+function renderMetricComparisonList(containerId, metrics) {
+  const box = document.getElementById(containerId);
+  if (!box) return;
+
+  const entries = Object.entries(metrics).filter(([k, v]) => typeof v === "number" || typeof v === "string");
+  if (entries.length === 0) {
+    box.innerHTML = `<span style="color:var(--text-muted); font-size:13px;">No metric telemetry available.</span>`;
+    return;
+  }
+
+  box.innerHTML = entries.map(([k, v]) => `
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(255,255,255,0.02); border-radius:var(--radius-sm);">
+      <span style="color:var(--text-muted); font-size:12px; text-transform:uppercase; font-family:var(--font-mono);">${k.replace(/_/g, ' ')}</span>
+      <strong style="color:#ffffff; font-family:var(--font-mono); font-size:13px;">${typeof v === "number" ? v.toFixed(4) : v}</strong>
+    </div>
+  `).join("");
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Auditor Benchmark Lab Controller
+// ═══════════════════════════════════════════════════════════════════
+
+async function runBenchmarkLab() {
+  const btn = document.getElementById("btn-run-benchmark");
+  const model = document.getElementById("benchmark-model-select")?.value || "random_forest";
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;margin-right:6px;"></span> Evaluating Benchmark...`;
+  }
+
+  try {
+    const payload = {
+      dataset_id: state.activeDatasetId || null,
+      model_name: model,
+    };
+
+    const res = await fetch("/api/auditor/benchmark", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    const overall = data.overall || {};
+
+    // KPIs
+    const prec = document.getElementById("bm-precision-val");
+    if (prec) prec.innerText = `${Math.round((overall.overall_precision || 0) * 100)}%`;
+
+    const rec = document.getElementById("bm-recall-val");
+    if (rec) rec.innerText = `${Math.round((overall.overall_recall || 0) * 100)}%`;
+
+    const f1 = document.getElementById("bm-f1-val");
+    if (f1) f1.innerText = `${Math.round((overall.overall_f1 || 0) * 100)}%`;
+
+    const scen = document.getElementById("bm-scenarios-val");
+    if (scen) scen.innerText = `${overall.scenario_count ?? (data.scenarios || []).length} Scenarios`;
+
+    const tm = document.getElementById("bm-time-val");
+    if (tm) tm.innerText = `${overall.total_time ?? 0}s duration`;
+
+    // Table
+    const tbody = (data.scenarios || []).map(s => `
+      <tr>
+        <td><strong style="color:#ffffff;">${s.name}</strong></td>
+        <td><span class="badge badge-info">${s.type}</span></td>
+        <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${(s.ground_truth || []).join(", ") || 'None'}</td>
+        <td style="font-family:var(--font-mono); font-size:11px; color:var(--accent-cyan);">${(s.detected || []).join(", ") || 'None'}</td>
+        <td style="font-family:var(--font-mono);">${(s.precision * 100).toFixed(0)}%</td>
+        <td style="font-family:var(--font-mono);">${(s.recall * 100).toFixed(0)}%</td>
+        <td><strong style="color:#34d399; font-family:var(--font-mono);">${(s.f1 * 100).toFixed(0)}%</strong></td>
+      </tr>
+    `).join("");
+
+    const tableBody = document.querySelector("#benchmark-scenarios-table tbody");
+    if (tableBody) tableBody.innerHTML = tbody || '<tr><td colspan="7" style="text-align:center;">No scenarios returned.</td></tr>';
+
+    showToast("Synthetic benchmark evaluation complete!", "success");
+  } catch (err) {
+    showToast(`Benchmark failed: ${err.message}`, "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = "▶ Run Synthetic Benchmark";
+    }
+  }
+}
+

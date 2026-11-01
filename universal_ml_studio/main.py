@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from .api.auditor import router as auditor_router
 from .api.datasets import router as datasets_router
 from .api.eda import router as eda_router
 from .api.experiments import router as experiments_router
@@ -71,6 +72,7 @@ app.include_router(ml_router)
 app.include_router(models_router)
 app.include_router(experiments_router)
 app.include_router(reports_router)
+app.include_router(auditor_router)
 
 # ── Static Files Mount ─────────────────────────────────────────────────────────
 STATIC_DIR = Path(__file__).parent / "static"

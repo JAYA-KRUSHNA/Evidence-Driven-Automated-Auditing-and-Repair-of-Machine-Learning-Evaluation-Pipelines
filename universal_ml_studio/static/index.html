@@ -56,9 +56,21 @@
         </li>
 
         <li class="nav-category" style="margin-top: 6px;">// GOVERNANCE &amp; AUDIT</li>
+        <li class="nav-item" data-tab="auditor">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          Pipeline Auditor
+        </li>
+        <li class="nav-item" data-tab="repair">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          Pipeline Repair
+        </li>
+        <li class="nav-item" data-tab="benchmark">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+          Benchmark Lab
+        </li>
         <li class="nav-item" data-tab="reports">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          Reports &amp; Audit
+          Reports &amp; Catalog
         </li>
       </ul>
 
@@ -924,6 +936,221 @@
               <table class="data-table" id="reports-catalog-table">
                 <thead><tr><th>Report ID</th><th>Type</th><th>Format</th><th>File Size</th><th>Created At</th><th>Action</th></tr></thead>
                 <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═════════ 9. PIPELINE AUDITOR VIEW ═════════ -->
+        <section id="tab-auditor" class="view-section">
+          <!-- Top Control Header -->
+          <div class="glass-card" style="margin-bottom:20px;">
+            <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+              <div>
+                <div class="card-title">🛡️ Evidence-Driven Pipeline Auditor</div>
+                <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">
+                  Automated detection of Target Leakage, Preprocessing Leakage, Split Contamination, and Metric Distortion.
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <label class="form-label" style="margin:0; font-size:12px;">Model:</label>
+                  <select id="auditor-model-select" class="form-select" style="min-width:130px; padding:6px 10px; font-size:12px;">
+                    <option value="random_forest">Random Forest</option>
+                    <option value="logistic_regression">Logistic Regression</option>
+                    <option value="decision_tree">Decision Tree</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary" id="btn-run-audit" onclick="runPipelineAudit()">▶ Run Deep Pipeline Audit</button>
+                <button class="btn btn-secondary" onclick="exportAuditFindingsCSV()">📥 Export Findings CSV</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Auditor KPI Cards -->
+          <div class="kpi-grid" style="margin-bottom:20px;">
+            <div class="kpi-card">
+              <div class="kpi-icon indigo">🛡️</div>
+              <div>
+                <div class="kpi-label">Pipeline Integrity</div>
+                <div class="kpi-val" id="auditor-integrity-val">-- / 100</div>
+                <span class="badge badge-valid" id="auditor-integrity-badge" style="font-size:11px; margin-top:4px;">Pending Audit</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon rose">🚨</div>
+              <div>
+                <div class="kpi-label">Confirmed Leakages</div>
+                <div class="kpi-val" id="auditor-confirmed-val">0</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="auditor-critical-val">0 critical defects</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon amber">⚠️</div>
+              <div>
+                <div class="kpi-label">Suspected Flaws</div>
+                <div class="kpi-val" id="auditor-suspected-val">0</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="auditor-warning-val">0 warnings</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon cyan">📊</div>
+              <div>
+                <div class="kpi-label">Baseline Metric</div>
+                <div class="kpi-val" id="auditor-metric-val">--</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="auditor-metric-label">Model Score</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Findings Filter and List -->
+          <div class="glass-card">
+            <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+              <div class="card-title">📋 Audit Findings &amp; Evidence Log</div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('all')">All</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('critical')">Critical</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('high')">High</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('target_leakage')">Target Leakage</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('preprocessing_leakage')">Prep Leakage</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('split_integrity')">Split Integrity</button>
+              </div>
+            </div>
+            <div id="auditor-findings-container" style="display:flex; flex-direction:column; gap:14px; margin-top:10px;">
+              <span style="color:var(--text-muted); font-size:13px;">Select a dataset and click "Run Deep Pipeline Audit" to detect potential evaluation leakage and pipeline bugs.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═════════ 10. PIPELINE REPAIR VIEW ═════════ -->
+        <section id="tab-repair" class="view-section">
+          <div class="glass-card" style="margin-bottom:20px;">
+            <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+              <div>
+                <div class="card-title">⚡ Automated Pipeline Correction &amp; Repair Engine</div>
+                <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">
+                  Applies evidence-grounded repairs: feature isolation, fold-contained transformers, and honest evaluation splits.
+                </div>
+              </div>
+              <button class="btn btn-primary" id="btn-run-repair" onclick="runPipelineRepair()">⚡ Apply 1-Click Pipeline Repair</button>
+            </div>
+            <div id="repair-status-banner" style="margin-top:10px; font-size:13px; color:var(--text-muted);">
+              Run audit first, or click "Apply 1-Click Pipeline Repair" to auto-audit and fix detected evaluation flaws.
+            </div>
+          </div>
+
+          <div class="grid-2col" style="margin-bottom:20px;">
+            <!-- Left: Baseline (Before) -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title">🚨 Baseline Pipeline (Before Repair)</div>
+                <span class="badge badge-invalid" id="repair-before-badge">Leaky / Inflated</span>
+              </div>
+              <div id="repair-before-metrics-list" style="display:flex; flex-direction:column; gap:10px;">
+                <span style="color:var(--text-muted); font-size:13px;">No repair run yet.</span>
+              </div>
+            </div>
+
+            <!-- Right: Repaired (After) -->
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title">✅ Repaired Pipeline (After Repair)</div>
+                <span class="badge badge-valid" id="repair-after-badge">Honest / Production-Ready</span>
+              </div>
+              <div id="repair-after-metrics-list" style="display:flex; flex-direction:column; gap:10px;">
+                <span style="color:var(--text-muted); font-size:13px;">No repair run yet.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="card-title">🛠️ Applied Pipeline Repair Actions</div>
+              <span class="badge badge-info" id="repair-actions-count">0 Actions</span>
+            </div>
+            <div id="repair-actions-list" style="display:flex; flex-direction:column; gap:10px;">
+              <span style="color:var(--text-muted); font-size:13px;">Click "Apply 1-Click Pipeline Repair" to generate and execute correction actions.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═════════ 11. BENCHMARK LAB VIEW ═════════ -->
+        <section id="tab-benchmark" class="view-section">
+          <div class="glass-card" style="margin-bottom:20px;">
+            <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+              <div>
+                <div class="card-title">🧪 Auditor Benchmark Lab</div>
+                <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">
+                  Tests auditor detection precision, recall, and F1 against controlled synthetic leakage corruptions.
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <select id="benchmark-model-select" class="form-select" style="min-width:130px; padding:6px 10px; font-size:12px;">
+                  <option value="random_forest">Random Forest</option>
+                  <option value="logistic_regression">Logistic Regression</option>
+                </select>
+                <button class="btn btn-primary" id="btn-run-benchmark" onclick="runBenchmarkLab()">▶ Run Synthetic Benchmark</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Benchmark KPIs -->
+          <div class="kpi-grid" style="margin-bottom:20px;">
+            <div class="kpi-card">
+              <div class="kpi-icon indigo">🎯</div>
+              <div>
+                <div class="kpi-label">Overall Precision</div>
+                <div class="kpi-val" id="bm-precision-val">--%</div>
+                <span class="badge badge-valid" id="bm-precision-badge" style="font-size:11px; margin-top:4px;">Target: &gt;90%</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon cyan">🔍</div>
+              <div>
+                <div class="kpi-label">Overall Recall</div>
+                <div class="kpi-val" id="bm-recall-val">--%</div>
+                <span class="badge badge-info" id="bm-recall-badge" style="font-size:11px; margin-top:4px;">Target: &gt;85%</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon emerald">⚖️</div>
+              <div>
+                <div class="kpi-label">Overall F1 Score</div>
+                <div class="kpi-val" id="bm-f1-val">--%</div>
+                <span class="badge badge-valid" id="bm-f1-badge" style="font-size:11px; margin-top:4px;">Balanced Accuracy</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon amber">⏱️</div>
+              <div>
+                <div class="kpi-label">Scenarios Evaluated</div>
+                <div class="kpi-val" id="bm-scenarios-val">0 / 0</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="bm-time-val">0.00s execution</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Synthetic Scenarios Table -->
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="card-title">🔬 Controlled Corruption Scenarios &amp; Ground Truth Detection</div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table" id="benchmark-scenarios-table">
+                <thead>
+                  <tr>
+                    <th>Scenario</th>
+                    <th>Corruption Type</th>
+                    <th>Ground Truth</th>
+                    <th>Auditor Detection</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Click "Run Synthetic Benchmark" to evaluate auditor detection against controlled corruption scenarios.</td></tr>
+                </tbody>
               </table>
             </div>
           </div>
