@@ -6,56 +6,66 @@
   <title>Universal AI/ML Studio — Intelligent Platform Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
   <div class="app-container">
-    <!-- ── Sidebar ─────────────────────────────────────────── -->
+    <!-- ── Sidebar Navigation ──────────────────────────────────────── -->
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-icon">AI</div>
-        <div class="brand-text">Universal ML Studio</div>
+        <div class="brand-info">
+          <div class="brand-text">Universal ML Studio</div>
+          <div class="brand-tag"><span class="brand-tag-dot"></span> Telemetry v2.4</div>
+        </div>
       </div>
 
       <ul class="nav-links">
+        <li class="nav-category">// EXPLORATION &amp; DATA</li>
         <li class="nav-item active" data-tab="overview">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
           Overview
         </li>
         <li class="nav-item" data-tab="datasets">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-          Datasets
+          Datasets Hub
         </li>
         <li class="nav-item" data-tab="validation">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          Validation
+          Data Validation
         </li>
         <li class="nav-item" data-tab="eda">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
           EDA Analysis
         </li>
+
+        <li class="nav-category" style="margin-top: 6px;">// MODELING &amp; INFERENCE</li>
         <li class="nav-item" data-tab="preprocessing">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
           Preprocessing
         </li>
         <li class="nav-item" data-tab="ml">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-          AutoML & Training
+          AutoML &amp; Training
         </li>
         <li class="nav-item" data-tab="prediction">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           Live Prediction
         </li>
+
+        <li class="nav-category" style="margin-top: 6px;">// GOVERNANCE &amp; AUDIT</li>
         <li class="nav-item" data-tab="reports">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          Reports & Audit
+          Reports &amp; Audit
         </li>
       </ul>
 
       <div class="sidebar-footer">
-        <span class="status-badge"><span class="status-dot"></span> Backend Live</span>
-        <a href="/docs" target="_blank" style="color:var(--accent-indigo); text-decoration:none; font-weight:600;">Swagger Docs</a>
+        <div class="sidebar-links-row">
+          <span class="status-badge"><span class="status-dot"></span> Backend Live</span>
+          <a href="/docs" target="_blank" class="swagger-link">Swagger Docs ↗</a>
+        </div>
       </div>
     </aside>
 
@@ -63,96 +73,143 @@
     <div class="main-wrapper">
       <header class="top-bar">
         <div class="top-left">
-          <h2 class="page-title" id="page-heading">Platform Overview</h2>
+          <div class="title-group">
+            <div class="breadcrumb-trail">WORKSPACE / <span>AI ML STUDIO</span></div>
+            <h2 class="page-title" id="page-heading">Platform Overview</h2>
+          </div>
           <div class="active-dataset-chip">
             <span>Selected Dataset:</span>
             <strong id="active-dataset-name">None Selected</strong>
           </div>
         </div>
         <div class="top-right">
-          <select id="dataset-selector" class="form-select" style="width: 220px;" onchange="handleDatasetSelect(this.value)">
+          <select id="dataset-selector" class="form-select" style="width: 240px;" onchange="handleDatasetSelect(this.value)">
             <option value="">-- Choose Dataset --</option>
           </select>
-          <button class="btn btn-primary" onclick="showTab('datasets')">+ Load Dataset</button>
+          <button class="btn btn-primary" onclick="showTab('datasets')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+            Load Dataset
+          </button>
         </div>
       </header>
 
       <main class="content-body">
         <!-- ═════════ 1. OVERVIEW VIEW ═════════ -->
         <section id="tab-overview" class="view-section active">
+          <!-- Bento KPI Cards Row -->
           <div class="kpi-grid">
             <div class="kpi-card">
               <div class="kpi-icon indigo">📁</div>
-              <div>
+              <div class="kpi-body">
                 <div class="kpi-label">Active Dataset</div>
                 <div class="kpi-val" id="kpi-dataset-name">No Dataset</div>
+                <div class="kpi-sub"><span style="color:var(--accent-indigo);">●</span> Loaded in Memory</div>
               </div>
             </div>
             <div class="kpi-card">
               <div class="kpi-icon cyan">📊</div>
-              <div>
-                <div class="kpi-label">Rows × Columns</div>
+              <div class="kpi-body">
+                <div class="kpi-label">Dimensions</div>
                 <div class="kpi-val" id="kpi-dimensions">0 × 0</div>
+                <div class="kpi-sub"><span style="color:var(--accent-cyan);">●</span> Rows × Features</div>
               </div>
             </div>
             <div class="kpi-card">
               <div class="kpi-icon emerald">🛡️</div>
-              <div>
+              <div class="kpi-body">
                 <div class="kpi-label">Validation Status</div>
                 <div class="kpi-val" id="kpi-validation-status">Pending</div>
+                <div class="kpi-sub"><span style="color:var(--accent-emerald);">●</span> 30+ Quality Checks</div>
               </div>
             </div>
             <div class="kpi-card">
               <div class="kpi-icon amber">🤖</div>
-              <div>
+              <div class="kpi-body">
                 <div class="kpi-label">Trained Models</div>
                 <div class="kpi-val" id="kpi-models-count">0</div>
+                <div class="kpi-sub"><span style="color:var(--accent-amber);">●</span> Active Artifacts</div>
               </div>
             </div>
           </div>
 
           <div class="grid-2col">
+            <!-- Fast-Track Pipeline DAG -->
             <div class="glass-card">
               <div class="card-header">
-                <div class="card-title">🚀 Fast-Track Workflow</div>
+                <div class="card-title">
+                  <span class="card-title-icon">🚀</span> Fast-Track Pipeline Execution
+                </div>
+                <span class="badge badge-algo">Autonomous DAG</span>
               </div>
-              <p style="color:var(--text-muted); font-size:14px; line-height:1.6; margin-bottom:18px;">
-                Universal AI/ML Studio automatically guides tabular datasets from raw ingestion to production-grade machine learning:
+              <p class="card-subtitle">
+                Universal AI/ML Studio guides tabular datasets systematically through 4 automated production stages:
               </p>
-              <div style="display:flex; flex-direction:column; gap:12px;">
-                <div style="display:flex; align-items:center; gap:12px; padding:10px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
-                  <span class="badge badge-info">Step 1</span>
-                  <span style="font-size:13px;">Select or upload a dataset in the <strong>Datasets</strong> hub</span>
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <div class="pipeline-step" onclick="showTab('datasets')">
+                  <span class="pipeline-step-badge badge-info">STEP 1</span>
+                  <div class="pipeline-step-content">
+                    <div class="pipeline-step-title">Ingestion &amp; Library Selection</div>
+                    <div class="pipeline-step-desc">Upload custom CSV/XLSX or choose from 7 built-in benchmark datasets.</div>
+                  </div>
+                  <span style="color:var(--text-dim); font-size:12px;">Go →</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:12px; padding:10px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
-                  <span class="badge badge-valid">Step 2</span>
-                  <span style="font-size:13px;">Run <strong>4-Tier Automated Validation</strong> (checks 30+ quality rules)</span>
+                <div class="pipeline-step" onclick="showTab('validation')">
+                  <span class="pipeline-step-badge badge-valid">STEP 2</span>
+                  <div class="pipeline-step-content">
+                    <div class="pipeline-step-title">4-Tier Automated Validation</div>
+                    <div class="pipeline-step-desc">Audits 30+ quality checkpoints across integrity, schemas, and leakage vectors.</div>
+                  </div>
+                  <span style="color:var(--text-dim); font-size:12px;">Go →</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:12px; padding:10px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
-                  <span class="badge badge-warning">Step 3</span>
-                  <span style="font-size:13px;">Explore distributions in <strong>EDA</strong> & clean with <strong>Preprocessing</strong></span>
+                <div class="pipeline-step" onclick="showTab('eda')">
+                  <span class="pipeline-step-badge badge-warning">STEP 3</span>
+                  <div class="pipeline-step-content">
+                    <div class="pipeline-step-title">EDA &amp; Adaptive Cleaning</div>
+                    <div class="pipeline-step-desc">Explore feature correlations, impute nulls, encode categoricals, and scale tensors.</div>
+                  </div>
+                  <span style="color:var(--text-dim); font-size:12px;">Go →</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:12px; padding:10px; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm);">
-                  <span class="badge badge-algo">Step 4</span>
-                  <span style="font-size:13px;">Auto-identify task, benchmark classifiers/regressors & test predictions</span>
+                <div class="pipeline-step" onclick="showTab('ml')">
+                  <span class="pipeline-step-badge badge-algo">STEP 4</span>
+                  <div class="pipeline-step-content">
+                    <div class="pipeline-step-title">AutoML &amp; Real-Time Inference</div>
+                    <div class="pipeline-step-desc">Auto-identifies task type, benchmarks classifiers/regressors, and serves predictions.</div>
+                  </div>
+                  <span style="color:var(--text-dim); font-size:12px;">Go →</span>
                 </div>
               </div>
             </div>
 
+            <!-- Quick Dataset Launcher -->
             <div class="glass-card">
               <div class="card-header">
-                <div class="card-title">⚡ Quick Dataset Launcher</div>
+                <div class="card-title">
+                  <span class="card-title-icon">⚡</span> Quick Dataset Launcher
+                </div>
+                <span class="badge badge-info">1-Click Seed</span>
               </div>
-              <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">
-                Click any built-in benchmark dataset to load it immediately into memory and database:
+              <p class="card-subtitle">
+                Instantly load standard benchmark datasets into active memory and database registry:
               </p>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('iris')">🌸 Iris (Classif.)</button>
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('wine')">🍷 Wine (3-Class)</button>
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('breast_cancer')">🧬 Breast Cancer</button>
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('titanic')">🚢 Titanic (Mixed)</button>
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('california_housing')">🏡 Housing (Regress.)</button>
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('diabetes_regression')">🩸 Diabetes (Progression)</button>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('iris')" style="justify-content:flex-start; padding:12px;">
+                  🌸 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">Iris</div><div style="font-size:11px; color:var(--text-dim);">Classification • 150 rows</div></div>
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('wine')" style="justify-content:flex-start; padding:12px;">
+                  🍷 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">Wine</div><div style="font-size:11px; color:var(--text-dim);">3-Class • 178 rows</div></div>
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('breast_cancer')" style="justify-content:flex-start; padding:12px;">
+                  🧬 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">Breast Cancer</div><div style="font-size:11px; color:var(--text-dim);">Binary • 569 rows</div></div>
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('titanic')" style="justify-content:flex-start; padding:12px;">
+                  🚢 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">Titanic</div><div style="font-size:11px; color:var(--text-dim);">Mixed Data • 891 rows</div></div>
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('california_housing')" style="justify-content:flex-start; padding:12px;">
+                  🏡 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">California Housing</div><div style="font-size:11px; color:var(--text-dim);">Regression • 20k rows</div></div>
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('diabetes_regression')" style="justify-content:flex-start; padding:12px;">
+                  🩸 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">Diabetes</div><div style="font-size:11px; color:var(--text-dim);">Progression • 442 rows</div></div>
+                </button>
               </div>
             </div>
           </div>
@@ -163,29 +220,37 @@
           <div class="grid-2col" style="margin-bottom:24px;">
             <div class="glass-card">
               <div class="card-header">
-                <div class="card-title">📤 Upload Custom Dataset</div>
+                <div class="card-title">
+                  <span class="card-title-icon">📤</span> Ingest Custom Dataset
+                </div>
+                <span class="badge badge-info">CSV / XLSX / XLS</span>
               </div>
               <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
                 <div class="dropzone-icon">☁️</div>
-                <h4 style="margin-bottom:6px;">Drop your dataset here or click to browse</h4>
-                <p style="color:var(--text-dim); font-size:12px;">Supports CSV, XLSX, and XLS up to 200MB</p>
+                <h4 style="margin-bottom:6px; font-weight:700;">Drop your dataset here or click to browse</h4>
+                <p style="color:var(--text-muted); font-size:12px;">Supports CSV, XLSX, and XLS format up to 200MB</p>
                 <input type="file" id="file-input" style="display:none;" accept=".csv,.xlsx,.xls" onchange="uploadFile(this.files[0])">
               </div>
             </div>
 
             <div class="glass-card">
               <div class="card-header">
-                <div class="card-title">📦 Built-in Benchmark Datasets</div>
+                <div class="card-title">
+                  <span class="card-title-icon">📦</span> Built-in Benchmark Datasets
+                </div>
+                <span class="badge badge-algo">Pre-verified</span>
               </div>
               <div class="sample-grid" id="samples-container">
-                <!-- Loaded dynamically -->
+                <!-- Dynamically loaded -->
               </div>
             </div>
           </div>
 
           <div class="glass-card">
             <div class="card-header">
-              <div class="card-title">🔍 Dataset Preview & Details</div>
+              <div class="card-title">
+                <span class="card-title-icon">🔍</span> Dataset Preview &amp; Schema Inspector
+              </div>
               <div style="display:flex; gap:10px;">
                 <button class="btn btn-secondary btn-sm" onclick="downloadCurrentDataset()">⬇ Download File</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteCurrentDataset()">🗑 Delete</button>
@@ -205,25 +270,29 @@
           <div class="glass-card" style="margin-bottom:24px;">
             <div class="card-header">
               <div>
-                <div class="card-title">🛡️ 4-Tier Automated Validation Engine</div>
-                <p style="color:var(--text-muted); font-size:13px; margin-top:4px;">
-                  Performs 30+ checks across File Integrity, Structural Soundness, Quality Audits, and ML Readiness.
+                <div class="card-title">
+                  <span class="card-title-icon">🛡️</span> 4-Tier Automated Validation Engine
+                </div>
+                <p class="card-subtitle" style="margin-bottom:0; margin-top:4px;">
+                  Executes 30+ quality checkpoints across File Integrity, Structural Soundness, Quality Audits, and ML Readiness.
                 </p>
               </div>
               <button class="btn btn-primary" onclick="runValidation()">▶ Run Validation</button>
             </div>
-            <div class="kpi-grid" id="val-summary-cards" style="margin-bottom:0;">
-              <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-val" id="val-status">-</div></div>
-              <div class="kpi-card"><div class="kpi-label">Total Checks</div><div class="kpi-val" id="val-total">-</div></div>
-              <div class="kpi-card"><div class="kpi-label">Passed</div><div class="kpi-val" id="val-passed" style="color:var(--accent-emerald);">-</div></div>
-              <div class="kpi-card"><div class="kpi-label">Warnings</div><div class="kpi-val" id="val-warnings" style="color:var(--accent-amber);">-</div></div>
-              <div class="kpi-card"><div class="kpi-label">Failed</div><div class="kpi-val" id="val-failed" style="color:var(--accent-rose);">-</div></div>
+            <div class="kpi-grid" id="val-summary-cards" style="margin-bottom:0; margin-top:16px;">
+              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">Status</div><div class="kpi-val" id="val-status">-</div></div></div>
+              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">Total Checks</div><div class="kpi-val" id="val-total">-</div></div></div>
+              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">Passed</div><div class="kpi-val" id="val-passed" style="color:var(--accent-emerald);">-</div></div></div>
+              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">Warnings</div><div class="kpi-val" id="val-warnings" style="color:var(--accent-amber);">-</div></div></div>
+              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">Failed</div><div class="kpi-val" id="val-failed" style="color:var(--accent-rose);">-</div></div></div>
             </div>
           </div>
 
           <div class="glass-card">
             <div class="card-header">
-              <div class="card-title">📋 Detailed Verification Checks</div>
+              <div class="card-title">
+                <span class="card-title-icon">📋</span> Detailed Verification Check Results
+              </div>
             </div>
             <div id="validation-checks-list">
               <p style="color:var(--text-dim); font-size:13px;">No validation report generated yet. Click "Run Validation" above.</p>
@@ -235,7 +304,9 @@
         <section id="tab-eda" class="view-section">
           <div class="glass-card" style="margin-bottom:24px;">
             <div class="card-header">
-              <div class="card-title">📈 Automated Exploratory Data Analysis</div>
+              <div class="card-title">
+                <span class="card-title-icon">📈</span> Automated Exploratory Data Analysis
+              </div>
               <button class="btn btn-primary" onclick="runEDA()">▶ Compute Full EDA</button>
             </div>
             <div id="eda-overview-box" style="display:flex; gap:20px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
@@ -245,7 +316,9 @@
 
           <div class="glass-card" style="margin-bottom:24px;">
             <div class="card-header">
-              <div class="card-title">📊 Numerical Summary Statistics</div>
+              <div class="card-title">
+                <span class="card-title-icon">📊</span> Numerical Summary Statistics
+              </div>
             </div>
             <div class="table-wrapper">
               <table class="data-table" id="eda-stats-table">
@@ -257,7 +330,9 @@
 
           <div class="glass-card">
             <div class="card-header">
-              <div class="card-title">🔗 Correlation Matrix</div>
+              <div class="card-title">
+                <span class="card-title-icon">🔗</span> Feature Correlation Heatmap Matrix
+              </div>
             </div>
             <div class="table-wrapper">
               <table class="data-table" id="eda-corr-table">
@@ -273,17 +348,22 @@
           <div class="grid-2col" style="margin-bottom:24px;">
             <div class="glass-card">
               <div class="card-header">
-                <div class="card-title">⚡ 1-Click Auto Preprocessing</div>
+                <div class="card-title">
+                  <span class="card-title-icon">⚡</span> 1-Click Auto Preprocessing
+                </div>
+                <span class="badge badge-valid">Recommended</span>
               </div>
-              <p style="color:var(--text-muted); font-size:13px; line-height:1.5; margin-bottom:18px;">
-                Automatically imputes missing values, encodes high/low cardinality categories, scales numeric features, and caps extreme outliers into a clean new version.
+              <p class="card-subtitle">
+                Automatically imputes missing values, encodes categories, scales numeric features, and caps extreme outliers into a clean new version.
               </p>
-              <button class="btn btn-primary" onclick="runAutoPreprocess()">⚡ Auto-Clean & Preprocess Dataset</button>
+              <button class="btn btn-primary" onclick="runAutoPreprocess()">⚡ Auto-Clean &amp; Preprocess Dataset</button>
             </div>
 
             <div class="glass-card">
               <div class="card-header">
-                <div class="card-title">🛠 Manual Preprocessing Operation</div>
+                <div class="card-title">
+                  <span class="card-title-icon">🛠</span> Manual Transformation Studio
+                </div>
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
                 <div class="form-group">
@@ -312,7 +392,9 @@
 
           <div class="glass-card">
             <div class="card-header">
-              <div class="card-title">📜 Preprocessing Transformation History</div>
+              <div class="card-title">
+                <span class="card-title-icon">📜</span> Preprocessing Transformation Audit History
+              </div>
             </div>
             <div class="table-wrapper">
               <table class="data-table" id="prep-history-table">
@@ -328,7 +410,10 @@
           <div class="grid-2col" style="margin-bottom:24px;">
             <div class="glass-card">
               <div class="card-header">
-                <div class="card-title">🎯 Model Training Studio</div>
+                <div class="card-title">
+                  <span class="card-title-icon">🎯</span> Model Training Studio
+                </div>
+                <span class="badge badge-algo">AutoML</span>
               </div>
               <div class="form-group">
                 <label class="form-label">Target Column</label>
@@ -336,16 +421,16 @@
                   <option value="">Select target column...</option>
                 </select>
               </div>
-              <div style="margin-bottom:14px;">
+              <div style="margin-bottom:16px;">
                 <span class="badge badge-info" id="ml-task-badge">Task Type: Auto-Detecting...</span>
               </div>
               <div class="form-group">
                 <label class="form-label">Algorithm</label>
                 <select id="ml-algorithm-select" class="form-select">
-                  <!-- Loaded dynamically based on classification or regression -->
+                  <!-- Dynamically loaded based on task -->
                 </select>
               </div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
                 <div class="form-group">
                   <label class="form-label">Test Split (e.g. 0.2)</label>
                   <input type="number" id="ml-test-size" class="form-input" value="0.2" step="0.05" min="0.1" max="0.5">
@@ -355,7 +440,7 @@
                   <input type="number" id="ml-cv-folds" class="form-input" value="3" min="2" max="10">
                 </div>
               </div>
-              <div style="display:flex; gap:12px;">
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
                 <button class="btn btn-primary" onclick="trainSingleModel()">🚀 Train Selected Model</button>
                 <button class="btn btn-secondary" onclick="runModelComparison()">🏆 Compare All Algorithms</button>
               </div>
@@ -363,17 +448,21 @@
 
             <div class="glass-card">
               <div class="card-header">
-                <div class="card-title">🎖 Latest Training Performance</div>
+                <div class="card-title">
+                  <span class="card-title-icon">🎖</span> Latest Training Performance
+                </div>
               </div>
               <div id="ml-result-display">
-                <p style="color:var(--text-dim); font-size:13px;">No model trained yet in this session. Configure and train a model.</p>
+                <p style="color:var(--text-dim); font-size:13px;">No model trained yet in this session. Configure parameters and train a model.</p>
               </div>
             </div>
           </div>
 
           <div class="glass-card">
             <div class="card-header">
-              <div class="card-title">🏆 Benchmark Comparison Leaderboard</div>
+              <div class="card-title">
+                <span class="card-title-icon">🏆</span> Benchmark Comparison Leaderboard
+              </div>
             </div>
             <div class="table-wrapper">
               <table class="data-table" id="ml-leaderboard-table">
@@ -389,7 +478,10 @@
           <div class="grid-2col">
             <div class="glass-card">
               <div class="card-header">
-                <div class="card-title">🔮 Inference Engine</div>
+                <div class="card-title">
+                  <span class="card-title-icon">🔮</span> Real-Time Inference Engine
+                </div>
+                <span class="badge badge-info">Zero Latency</span>
               </div>
               <div class="form-group">
                 <label class="form-label">Select Trained Model</label>
@@ -407,12 +499,14 @@
 
             <div class="glass-card">
               <div class="card-header">
-                <div class="card-title">🎯 Prediction Output</div>
+                <div class="card-title">
+                  <span class="card-title-icon">🎯</span> Prediction Output Telemetry
+                </div>
               </div>
-              <div id="prediction-result-box" style="text-align:center; padding:32px 16px;">
-                <div style="font-size:42px; margin-bottom:12px;">📊</div>
-                <h3 style="color:var(--text-muted); margin-bottom:8px;">Ready for Inference</h3>
-                <p style="color:var(--text-dim); font-size:13px;">Provide feature inputs and click "Run Live Inference" to generate instant predictions.</p>
+              <div id="prediction-result-box" style="text-align:center; padding:36px 16px;">
+                <div style="font-size:44px; margin-bottom:12px;">📊</div>
+                <h3 style="color:var(--text-muted); margin-bottom:8px; font-weight:600;">Ready for Inference</h3>
+                <p style="color:var(--text-dim); font-size:13px;">Provide feature inputs on the left and click "Run Live Inference" to generate instant predictions.</p>
               </div>
             </div>
           </div>
@@ -422,7 +516,10 @@
         <section id="tab-reports" class="view-section">
           <div class="glass-card" style="margin-bottom:24px;">
             <div class="card-header">
-              <div class="card-title">📑 Generate Platform Audit Report</div>
+              <div class="card-title">
+                <span class="card-title-icon">📑</span> Generate Platform Audit Report
+              </div>
+              <span class="badge badge-valid">Compliance Ready</span>
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:16px;">
               <div class="form-group">
@@ -443,12 +540,14 @@
                 </select>
               </div>
             </div>
-            <button class="btn btn-primary" onclick="generateReport()">📥 Generate & Archive Report</button>
+            <button class="btn btn-primary" onclick="generateReport()">📥 Generate &amp; Archive Report</button>
           </div>
 
           <div class="glass-card">
             <div class="card-header">
-              <div class="card-title">🗄 Archived Reports Catalog</div>
+              <div class="card-title">
+                <span class="card-title-icon">🗄</span> Archived Reports Catalog
+              </div>
             </div>
             <div class="table-wrapper">
               <table class="data-table" id="reports-catalog-table">
