@@ -660,7 +660,7 @@ async function renderPredictionForm(modelId) {
     group.className = "form-group";
     group.innerHTML = `
       <label class="form-label">${f}</label>
-      <input type="number" step="any" class="form-input pred-input" data-col="${f}" placeholder="Value..." value="1.0" required>
+      <input type="number" step="any" class="form-input pred-input" data-col="${f}" placeholder="Enter value..." required>
     `;
     container.appendChild(group);
   });
