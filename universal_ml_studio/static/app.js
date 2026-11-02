@@ -1485,58 +1485,95 @@ function renderCompareTable(results, selectedMetric, data) {
 }
 
 function renderOverallRankings(allResults) {
-  // Composite score: for each algorithm, compute its average rank across all scalar metrics
-  const tbody = document.querySelector("#ml-leaderboard-table tbody");
-  if (!tbody) return;
+  // Only work with results that have metrics (skip failed runs)
+  const validResults = allResults.filter(r => r.metrics && Object.keys(r.metrics).length > 0);
+  if (!validResults.length) return;
 
+  const tbody = document.querySelector("#ml-leaderboard-table tbody");
+  const thead = document.querySelector("#ml-leaderboard-table thead tr");
+  if (!tbody || !thead) return;
+
+  // Dynamically discover all scalar metric keys from results
   const metricKeys = [];
   const seen = new Set();
-  allResults.forEach(r => Object.keys(r.metrics||{}).forEach(k => {
-    if (!_SKIP_METRICS.has(k) && typeof r.metrics[k] === "number" && !seen.has(k)) {
-      seen.add(k); metricKeys.push(k);
-    }
-  }));
+  validResults.forEach(r => {
+    Object.keys(r.metrics).forEach(k => {
+      if (!_SKIP_METRICS.has(k) && typeof r.metrics[k] === "number" && !seen.has(k)) {
+        seen.add(k);
+        metricKeys.push(k);
+      }
+    });
+  });
 
-  // For each metric, rank all algorithms
-  const rankSums = {}; // algorithm -> sum of ranks
+  if (!metricKeys.length) return;
+
+  // Rank each algorithm per metric
+  const rankSums = {};
   const countMap = {};
-  allResults.forEach(r => { rankSums[r.algorithm] = 0; countMap[r.algorithm] = 0; });
+  validResults.forEach(r => { rankSums[r.algorithm] = 0; countMap[r.algorithm] = 0; });
 
   metricKeys.forEach(k => {
     const lowerBetter = _LOWER_IS_BETTER.has(k);
-    const sorted = [...allResults]
-      .filter(r => typeof r.metrics?.[k] === "number")
-      .sort((a,b) => lowerBetter ? a.metrics[k]-b.metrics[k] : b.metrics[k]-a.metrics[k]);
-    sorted.forEach((r, i) => { rankSums[r.algorithm] += (i+1); countMap[r.algorithm]++; });
+    const withMetric = validResults.filter(r => typeof r.metrics[k] === "number");
+    const sorted = [...withMetric].sort((a, b) =>
+      lowerBetter ? a.metrics[k] - b.metrics[k] : b.metrics[k] - a.metrics[k]
+    );
+    sorted.forEach((r, i) => { rankSums[r.algorithm] += (i + 1); countMap[r.algorithm]++; });
   });
 
-  // Composite score = 1 / avgRank (higher = better)
-  const ranked = allResults.map(r => ({
-    algorithm: r.algorithm,
-    composite: countMap[r.algorithm] > 0 ? (rankSums[r.algorithm] / countMap[r.algorithm]) : 999,
-    metrics: r.metrics || {},
-    training_time_sec: r.training_time_sec || 0,
-  })).sort((a,b) => a.composite - b.composite);
+  // Build sorted ranked list — keep direct reference to original r.metrics
+  const ranked = validResults
+    .map(r => ({
+      algorithm: r.algorithm,
+      avgRank: countMap[r.algorithm] > 0 ? rankSums[r.algorithm] / countMap[r.algorithm] : 999,
+      metrics: r.metrics,            // direct reference, NOT a copy
+      training_time_sec: r.training_time_sec || 0,
+    }))
+    .sort((a, b) => a.avgRank - b.avgRank);  // lowest avgRank = best
 
-  const KEY_METRICS = ["accuracy","f1","precision","recall","mcc","roc_auc","balanced_accuracy"];
-  const rankEmojis = ["🥇","🥈","🥉"];
+  // Preferred display order for columns, then any extras
+  const PREFERRED_ORDER = [
+    "accuracy", "f1", "precision", "recall",
+    "mcc", "roc_auc", "balanced_accuracy",
+    "f1_macro", "precision_macro", "recall_macro",
+    "specificity", "sensitivity",
+    "r2", "mae", "rmse", "mape",
+    "cv_mean_accuracy", "cv_std_accuracy", "cv_mean_rmse",
+  ];
+  const displayKeys = PREFERRED_ORDER.filter(k => seen.has(k))
+    .concat(metricKeys.filter(k => !PREFERRED_ORDER.includes(k)));
 
+  // Write header dynamically
+  thead.innerHTML =
+    "<th>Rank</th><th>Algorithm</th>" +
+    `<th style="color:var(--accent-amber-light);">Composite Score</th>` +
+    displayKeys.map(k => `<th>${_METRIC_LABELS[k] || k}</th>`).join("") +
+    "<th>Train Time</th>";
+
+  // Write rows
+  const MEDAL = ["🥇", "🥈", "🥉"];
   tbody.innerHTML = ranked.map((r, idx) => {
-    const emoji = rankEmojis[idx] || `#${idx+1}`;
-    const compositeScore = (1 / r.composite).toFixed(4);
-    const keyCells = KEY_METRICS.map(k => {
+    const compositeScore = r.avgRank < 999 ? (1 / r.avgRank).toFixed(4) : "0.0000";
+    const metricCells = displayKeys.map(k => {
       const v = r.metrics[k];
-      return `<td style="font-family:var(--font-mono); font-size:12px;">${typeof v==="number"?v.toFixed(4):"—"}</td>`;
+      return `<td style="font-family:var(--font-mono); font-size:12px; ${
+        idx === 0 ? "color:#34d399; font-weight:600;" : ""
+      }">${typeof v === "number" ? v.toFixed(4) : "—"}</td>`;
     }).join("");
+    const rankLabel = MEDAL[idx] || `<span style="font-family:var(--font-mono);">#${idx + 1}</span>`;
     return `<tr>
-      <td><strong style="color:${idx===0?'var(--accent-amber-light)':idx===1?'#adbac7':'var(--text-muted)'}; font-family:var(--font-mono);">${emoji}</strong></td>
-      <td><span class="badge ${idx===0?'badge-valid':'badge-algo'}">${r.algorithm}</span></td>
-      <td><strong style="color:var(--accent-cyan-light); font-family:var(--font-mono); font-size:14px;">${compositeScore}</strong></td>
-      ${keyCells}
+      <td><strong style="color:${
+        idx === 0 ? "var(--accent-amber-light)" :
+        idx === 1 ? "#adbac7" : "var(--text-muted)"
+      }; font-family:var(--font-mono);">${rankLabel}</strong></td>
+      <td><span class="badge ${idx === 0 ? "badge-valid" : "badge-algo"}">${r.algorithm}</span></td>
+      <td><strong style="color:var(--accent-cyan-light); font-family:var(--font-mono); font-size:15px;">${compositeScore}</strong></td>
+      ${metricCells}
       <td style="font-family:var(--font-mono); font-size:12px;">${r.training_time_sec.toFixed(3)}s</td>
     </tr>`;
   }).join("");
 }
+
 
 // ── Prediction ──────────────────────────────────────────────────
 async function refreshModelsList() {
