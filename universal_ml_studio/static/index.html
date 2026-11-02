@@ -841,15 +841,51 @@
             </div>
           </div>
 
-          <div class="glass-card">
+          <!-- ═══ Metric Comparison & Rankings Panel ═══ -->
+          <div class="glass-card" id="compare-panel" style="display:none;">
+            <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+              <div class="card-title">
+                <span class="card-title-icon">🏆</span> Algorithm Comparison &amp; Rankings
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <label style="font-size:12px; color:var(--text-muted); white-space:nowrap;">Sort &amp; Rank by:</label>
+                  <select id="compare-metric-select" class="form-select"
+                    style="min-width:180px; padding:6px 10px; font-size:12px;"
+                    onchange="reRenderComparison()">
+                    <!-- populated dynamically -->
+                  </select>
+                </div>
+                <span class="badge badge-info" id="compare-task-badge">–</span>
+              </div>
+            </div>
+
+            <!-- Bar chart -->
+            <div id="compare-chart" style="width:100%; height:320px; margin-bottom:4px;"></div>
+
+            <!-- Full metrics table -->
+            <div class="table-wrapper" style="margin-top:12px;">
+              <table class="data-table" id="compare-full-table">
+                <thead><tr id="compare-full-thead"></tr></thead>
+                <tbody id="compare-full-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Overall Rankings Card -->
+          <div class="glass-card" id="overall-ranking-panel" style="display:none; margin-top:0;">
             <div class="card-header">
               <div class="card-title">
-                <span class="card-title-icon">🏆</span> Benchmark Comparison Leaderboard
+                <span class="card-title-icon">🥇</span> Overall Rankings &nbsp;<span style="font-size:12px; font-weight:400; color:var(--text-muted);">(composite score — average rank across all metrics)</span>
               </div>
             </div>
             <div class="table-wrapper">
               <table class="data-table" id="ml-leaderboard-table">
-                <thead><tr><th>Rank</th><th>Algorithm</th><th>Primary Metric</th><th>Score</th><th>Training Duration</th><th>Status</th></tr></thead>
+                <thead><tr>
+                  <th>Rank</th><th>Algorithm</th><th>Composite Score</th>
+                  <th>Accuracy</th><th>F1</th><th>Precision</th><th>Recall</th>
+                  <th>MCC</th><th>ROC-AUC</th><th>Bal. Accuracy</th><th>Train Time</th>
+                </tr></thead>
                 <tbody></tbody>
               </table>
             </div>

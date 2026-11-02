@@ -27,6 +27,7 @@ from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     roc_auc_score, confusion_matrix,
+    balanced_accuracy_score, matthews_corrcoef, classification_report,
 )
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.naive_bayes import GaussianNB
@@ -109,16 +110,33 @@ class ClassificationEngine:
             # Predict
             y_pred = model.predict(X_test)
             multiclass = len(np.unique(y)) > 2
-            avg = "weighted" if multiclass else "binary"
+            avg_weighted = "weighted"
+            avg_macro = "macro"
 
             metrics: dict[str, Any] = {
-                "accuracy":  round(float(accuracy_score(y_test, y_pred)), 4),
-                "precision": round(float(precision_score(y_test, y_pred, average=avg, zero_division=0)), 4),
-                "recall":    round(float(recall_score(y_test, y_pred, average=avg, zero_division=0)), 4),
-                "f1":        round(float(f1_score(y_test, y_pred, average=avg, zero_division=0)), 4),
+                "accuracy":           round(float(accuracy_score(y_test, y_pred)), 4),
+                "precision":          round(float(precision_score(y_test, y_pred, average=avg_weighted, zero_division=0)), 4),
+                "recall":             round(float(recall_score(y_test, y_pred, average=avg_weighted, zero_division=0)), 4),
+                "f1":                 round(float(f1_score(y_test, y_pred, average=avg_weighted, zero_division=0)), 4),
+                # Macro averages (treats all classes equally — better for imbalanced data)
+                "precision_macro":    round(float(precision_score(y_test, y_pred, average=avg_macro, zero_division=0)), 4),
+                "recall_macro":       round(float(recall_score(y_test, y_pred, average=avg_macro, zero_division=0)), 4),
+                "f1_macro":           round(float(f1_score(y_test, y_pred, average=avg_macro, zero_division=0)), 4),
             }
 
-            # ROC-AUC (binary only)
+            # Balanced accuracy (accounts for class imbalance)
+            try:
+                metrics["balanced_accuracy"] = round(float(balanced_accuracy_score(y_test, y_pred)), 4)
+            except Exception:
+                pass
+
+            # Matthews Correlation Coefficient (best single metric for imbalanced classes)
+            try:
+                metrics["mcc"] = round(float(matthews_corrcoef(y_test, y_pred)), 4)
+            except Exception:
+                pass
+
+            # ROC-AUC (binary only with probability support)
             try:
                 if not multiclass and hasattr(model, "predict_proba"):
                     proba = model.predict_proba(X_test)[:, 1]
@@ -126,9 +144,45 @@ class ClassificationEngine:
             except Exception:
                 pass
 
-            # Confusion matrix
+            # Specificity = TN / (TN + FP), binary only
+            try:
+                if not multiclass:
+                    cm = confusion_matrix(y_test, y_pred)
+                    if cm.shape == (2, 2):
+                        tn, fp, fn, tp = cm.ravel()
+                        metrics["specificity"] = round(float(tn / (tn + fp)) if (tn + fp) > 0 else 0.0, 4)
+                        metrics["sensitivity"] = round(float(tp / (tp + fn)) if (tp + fn) > 0 else 0.0, 4)
+            except Exception:
+                pass
+
+            # Confusion matrix (stored as nested list)
             try:
                 metrics["confusion_matrix"] = confusion_matrix(y_test, y_pred).tolist()
+            except Exception:
+                pass
+
+            # Per-class breakdown (small number of classes only to keep response lean)
+            try:
+                classes = le.classes_.tolist() if hasattr(le, "classes_") else [str(c) for c in np.unique(y_test)]
+                if len(classes) <= 20:
+                    report = classification_report(
+                        y_test, y_pred,
+                        target_names=[str(c) for c in classes],
+                        output_dict=True,
+                        zero_division=0,
+                    )
+                    per_class = {}
+                    for cls_name, cls_metrics in report.items():
+                        if isinstance(cls_metrics, dict) and cls_name not in ("accuracy", "macro avg", "weighted avg"):
+                            per_class[str(cls_name)] = {
+                                "precision": round(cls_metrics.get("precision", 0), 4),
+                                "recall":    round(cls_metrics.get("recall", 0), 4),
+                                "f1":        round(cls_metrics.get("f1-score", 0), 4),
+                                "support":   int(cls_metrics.get("support", 0)),
+                            }
+                    if per_class:
+                        metrics["per_class"] = per_class
+                    metrics["class_labels"] = [str(c) for c in classes]
             except Exception:
                 pass
 

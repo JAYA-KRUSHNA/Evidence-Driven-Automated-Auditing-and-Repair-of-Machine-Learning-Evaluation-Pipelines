@@ -13,6 +13,25 @@ let state = {
   selectedModel: null,
 };
 
+// ── Comparison constants (used by runModelComparison and helpers) ─────────────
+let _lastComparisonData = null;
+const _SKIP_METRICS = new Set(["confusion_matrix", "per_class", "class_labels", "mape_note"]);
+const _METRIC_LABELS = {
+  accuracy: "Accuracy",          precision: "Precision (weighted)",
+  recall: "Recall (weighted)",   f1: "F1 (weighted)",
+  f1_macro: "F1 (macro)",        precision_macro: "Precision (macro)",
+  recall_macro: "Recall (macro)", balanced_accuracy: "Balanced Accuracy",
+  mcc: "MCC",                    roc_auc: "ROC-AUC",
+  specificity: "Specificity",    sensitivity: "Sensitivity",
+  r2: "R²",                      mae: "MAE",
+  mse: "MSE",                    rmse: "RMSE",
+  mape: "MAPE",
+  cv_mean_accuracy: "CV Accuracy (mean)", cv_std_accuracy: "CV Accuracy (std)",
+  cv_mean_r2: "CV R² (mean)",    cv_std_r2: "CV R² (std)",
+  cv_mean_rmse: "CV RMSE (mean)",cv_std_rmse: "CV RMSE (std)",
+};
+const _LOWER_IS_BETTER = new Set(["mae","mse","rmse","mape","cv_mean_rmse","cv_std_rmse","cv_std_accuracy"]);
+
 // ── Toast Notifications ─────────────────────────────────────────
 function showToast(message, type = "info") {
   const container = document.getElementById("toast-container");
@@ -1158,28 +1177,139 @@ async function trainSingleModel() {
       }),
     });
 
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.detail || "Training failed");
+    }
     const data = await res.json();
     showToast("Model trained successfully!", "success");
 
-    // Display result card
+    // Pull full metrics from model object (has ALL metrics incl. confusion_matrix, per_class)
+    const modelMeta = (data.models || [])[0] || {};
+    const allMetrics = modelMeta.metrics || {};
+
+    // Also pull scalar eval rows for CV fold breakdown
     const evals = data.evaluations || [];
-    const metricsHtml = evals.map(ev => `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-        <span style="color:var(--text-muted); font-size:13px; font-weight:500;">${ev.metric_name}:</span>
-        <strong style="color:var(--accent-cyan-light); font-family:var(--font-mono); font-size:15px; font-weight:700;">${Number(ev.metric_value).toFixed(4)}</strong>
-      </div>
-    `).join("");
+    const cvRows = evals.filter(ev => ev.split === "cv");
+
+    // ── Scalar metrics grid ──
+    const scalarMetrics = Object.entries(allMetrics)
+      .filter(([k, v]) => !_SKIP_METRICS.has(k) && typeof v === "number");
+
+    const scalarHtml = scalarMetrics.length ? `
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; margin-bottom:18px;">
+        ${scalarMetrics.map(([k, v]) => `
+          <div style="background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.12);
+                      border-radius:8px; padding:12px 14px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.04em;">
+              ${_METRIC_LABELS[k] || k}</div>
+            <div style="font-size:20px; font-weight:700; font-family:var(--font-mono); color:var(--accent-cyan-light);">
+              ${v.toFixed(4)}</div>
+          </div>`).join("")}
+      </div>` : "";
+
+    // ── Confusion matrix ──
+    const cm = allMetrics.confusion_matrix;
+    const classLabels = allMetrics.class_labels || [];
+    const cmHtml = cm ? (() => {
+      const rows = cm.map((row, i) => {
+        const cells = row.map((val, j) => {
+          const isCorrect = i === j;
+          const bg = isCorrect ? "rgba(52,211,153,0.15)" : "rgba(239,68,68,0.1)";
+          return `<td style="text-align:center; padding:8px 12px; font-family:var(--font-mono);
+                  font-weight:${isCorrect?700:400}; font-size:13px;
+                  color:${isCorrect?'#34d399':'#f87171'}; background:${bg};
+                  border:1px solid rgba(255,255,255,0.06);">${val}</td>`;
+        }).join("");
+        const lbl = classLabels[i] || `Class ${i}`;
+        return `<tr>
+          <td style="padding:8px 12px; font-size:11px; color:var(--text-muted); font-weight:600;
+                     border:1px solid rgba(255,255,255,0.06); white-space:nowrap;">Actual: ${lbl}</td>
+          ${cells}</tr>`;
+      }).join("");
+      const headerCells = cm[0].map((_, j) => {
+        const lbl = classLabels[j] || `Class ${j}`;
+        return `<th style="padding:6px 12px; font-size:11px; color:var(--text-muted);
+                font-weight:600; border:1px solid rgba(255,255,255,0.06);
+                white-space:nowrap;">Pred: ${lbl}</th>`;
+      }).join("");
+      return `
+        <div style="margin-bottom:18px;">
+          <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;
+                      text-transform:uppercase; letter-spacing:0.06em;">Confusion Matrix</div>
+          <div style="overflow-x:auto;">
+            <table style="border-collapse:collapse; font-size:13px;">
+              <thead><tr>
+                <th style="padding:6px 12px; border:1px solid rgba(255,255,255,0.06);"></th>
+                ${headerCells}</tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>`;
+    })() : "";
+
+    // ── Per-class breakdown ──
+    const perClass = allMetrics.per_class;
+    const perClassHtml = perClass ? `
+      <div style="margin-bottom:18px;">
+        <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;
+                    text-transform:uppercase; letter-spacing:0.06em;">Per-Class Metrics</div>
+        <div style="overflow-x:auto;">
+          <table style="border-collapse:collapse; width:100%; font-size:12px;">
+            <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+              ${["Class","Precision","Recall","F1","Support"].map(h =>
+                `<th style="padding:8px 12px; text-align:left; color:var(--text-muted); font-weight:600;">${h}</th>`).join("")}
+            </tr></thead>
+            <tbody>
+              ${Object.entries(perClass).map(([cls, m]) => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                  <td style="padding:8px 12px; font-family:var(--font-mono); color:var(--accent-cyan-light); font-weight:600;">${cls}</td>
+                  <td style="padding:8px 12px; font-family:var(--font-mono);">${m.precision?.toFixed(4) ?? "—"}</td>
+                  <td style="padding:8px 12px; font-family:var(--font-mono);">${m.recall?.toFixed(4) ?? "—"}</td>
+                  <td style="padding:8px 12px; font-family:var(--font-mono);">${m.f1?.toFixed(4) ?? "—"}</td>
+                  <td style="padding:8px 12px; font-family:var(--font-mono); color:var(--text-muted);">${m.support ?? "—"}</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>` : "";
+
+    // ── CV fold breakdown ──
+    const cvHtml = cvRows.length ? `
+      <div>
+        <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;
+                    text-transform:uppercase; letter-spacing:0.06em;">Cross-Validation Folds</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          ${cvRows.map(ev => `
+            <div style="background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2);
+                        border-radius:6px; padding:8px 12px; text-align:center;">
+              <div style="font-size:10px; color:var(--text-muted);">${ev.metric_name}</div>
+              <div style="font-family:var(--font-mono); font-size:14px; font-weight:700;
+                          color:#a5b4fc;">${Number(ev.metric_value).toFixed(4)}</div>
+            </div>`).join("")}
+        </div>
+      </div>` : "";
 
     const displayEl = document.getElementById("ml-result-display");
     if (displayEl) {
       displayEl.innerHTML = `
-        <div style="background:rgba(11, 16, 28, 0.6); padding:20px; border-radius:var(--radius-md); border:1px solid var(--border-card); box-shadow:var(--shadow-sm);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--border-subtle); padding-bottom:10px;">
-            <h4 style="color:#ffffff; font-size:15px; font-weight:700;">${algorithm.toUpperCase()} Results</h4>
+        <div style="background:rgba(11,16,28,0.6); padding:20px; border-radius:var(--radius-md);
+                    border:1px solid var(--border-card); box-shadow:var(--shadow-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center;
+                      margin-bottom:18px; border-bottom:1px solid var(--border-subtle); padding-bottom:12px;">
+            <div>
+              <h4 style="color:#ffffff; font-size:15px; font-weight:700; margin-bottom:2px;">
+                ${algorithm.replace(/_/g," ").toUpperCase()} Results</h4>
+              <div style="font-size:12px; color:var(--text-muted);">
+                Task: ${state.taskType} &nbsp;|&nbsp; Test split: ${(testSize*100).toFixed(0)}%
+              </div>
+            </div>
             <span class="badge badge-valid">CONVERGED</span>
           </div>
-          ${metricsHtml}
+          ${scalarHtml}
+          ${cmHtml}
+          ${perClassHtml}
+          ${cvHtml}
         </div>
       `;
     }
@@ -1189,6 +1319,7 @@ async function trainSingleModel() {
     showToast(`Training failed: ${err.message}`, "error");
   }
 }
+
 
 async function runModelComparison() {
   if (!state.activeDatasetId) return showToast("Select a dataset first", "info");
@@ -1208,27 +1339,203 @@ async function runModelComparison() {
         task_type: state.taskType,
       }),
     });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) throw new Error((await res.json()).detail || await res.text());
     const data = await res.json();
-    showToast(`Comparison complete! Best algorithm: ${data.best_algorithm}`, "success");
+    _lastComparisonData = data;
+    showToast(`Comparison complete! Best: ${data.best_algorithm}`, "success");
 
-    // Render Leaderboard
-    const tbody = data.results.map((r, idx) => `
-      <tr>
-        <td><strong style="font-family:var(--font-mono); color:${idx === 0 ? 'var(--accent-amber-light)' : idx === 1 ? 'var(--text-bright)' : 'var(--text-muted)'};">#${idx + 1}</strong></td>
-        <td><span class="badge ${idx === 0 ? 'badge-valid' : 'badge-algo'}">${r.algorithm}</span></td>
-        <td style="font-family:var(--font-mono); font-size:12px;">${data.ranking_metric}</td>
-        <td><strong style="color:var(--accent-cyan-light); font-family:var(--font-mono); font-size:14px;">${r.metrics?.[data.ranking_metric]?.toFixed(4) ?? '-'}</strong></td>
-        <td style="font-family:var(--font-mono);">${r.training_time_sec?.toFixed(3) ?? '-'}s</td>
-        <td><span class="badge badge-valid">Completed</span></td>
-      </tr>
-    `).join("");
-    const leaderEl = document.querySelector("#ml-leaderboard-table tbody");
-    if (leaderEl) leaderEl.innerHTML = tbody;
+    // Collect all scalar metric keys across all results
+    const allMetricKeys = new Set();
+    (data.results || []).forEach(r => {
+      Object.keys(r.metrics || {}).forEach(k => {
+        if (!_SKIP_METRICS.has(k) && typeof r.metrics[k] === "number") allMetricKeys.add(k);
+      });
+    });
+
+    // Populate metric dropdown
+    const sel = document.getElementById("compare-metric-select");
+    sel.innerHTML = Array.from(allMetricKeys).map(k =>
+      `<option value="${k}" ${k === data.ranking_metric ? "selected" : ""}>${_METRIC_LABELS[k] || k}</option>`
+    ).join("");
+
+    // Task badge
+    const taskBadge = document.getElementById("compare-task-badge");
+    if (taskBadge) taskBadge.textContent = `Task: ${data.task_type || "?"}`;
+
+    // Show panels
+    document.getElementById("compare-panel").style.display = "";
+    document.getElementById("overall-ranking-panel").style.display = "";
+
+    reRenderComparison();
     await refreshModelsList();
   } catch (err) {
     showToast(`Comparison failed: ${err.message}`, "error");
   }
+}
+
+function reRenderComparison() {
+  if (!_lastComparisonData) return;
+  const sel = document.getElementById("compare-metric-select");
+  const selectedMetric = sel ? sel.value : (_lastComparisonData.ranking_metric || "accuracy");
+  const data = _lastComparisonData;
+
+  // Sort results by selected metric
+  const results = [...(data.results || [])].filter(r => r.metrics && typeof r.metrics[selectedMetric] === "number");
+  const lowerBetter = _LOWER_IS_BETTER.has(selectedMetric);
+  results.sort((a, b) => {
+    const av = a.metrics[selectedMetric] ?? (lowerBetter ? Infinity : -Infinity);
+    const bv = b.metrics[selectedMetric] ?? (lowerBetter ? Infinity : -Infinity);
+    return lowerBetter ? av - bv : bv - av;
+  });
+
+  renderCompareChart(results, selectedMetric, data);
+  renderCompareTable(results, selectedMetric, data);
+  renderOverallRankings(data.results || []);
+}
+
+function renderCompareChart(results, selectedMetric, data) {
+  const el = document.getElementById("compare-chart");
+  if (!el || !results.length) return;
+
+  const algorithms = results.map(r => r.algorithm);
+  const scores = results.map(r => +(r.metrics[selectedMetric] ?? 0).toFixed(4));
+  const metricLabel = _METRIC_LABELS[selectedMetric] || selectedMetric;
+
+  // Collect all available scalar metrics for a secondary grouped bar
+  const allScalarKeys = new Set();
+  results.forEach(r => Object.keys(r.metrics || {}).forEach(k => {
+    if (!_SKIP_METRICS.has(k) && typeof r.metrics[k] === "number") allScalarKeys.add(k);
+  }));
+
+  // Primary trace: selected metric
+  const traces = [{
+    x: algorithms,
+    y: scores,
+    type: "bar",
+    name: metricLabel,
+    marker: {
+      color: scores.map((_, i) => i === 0 ? "rgba(56,205,186,0.9)" : "rgba(99,120,210,0.7)"),
+      line: { color: "rgba(255,255,255,0.15)", width: 1 },
+    },
+    text: scores.map(s => s.toFixed(4)),
+    textposition: "outside",
+    textfont: { size: 11, color: "#c9d1d9"},
+  }];
+
+  const layout = {
+    paper_bgcolor: "transparent",
+    plot_bgcolor: "transparent",
+    font: { family: "Inter, sans-serif", color: "#8b949e", size: 12 },
+    margin: { t: 30, b: 60, l: 50, r: 20 },
+    xaxis: {
+      tickfont: { color: "#c9d1d9", size: 11 },
+      gridcolor: "rgba(255,255,255,0.05)",
+    },
+    yaxis: {
+      title: metricLabel,
+      titlefont: { color: "#8b949e", size: 11 },
+      tickfont: { color: "#c9d1d9", size: 10 },
+      gridcolor: "rgba(255,255,255,0.07)",
+      range: [0, Math.min(1.15, Math.max(...scores) * 1.12)],
+    },
+    showlegend: false,
+    bargap: 0.25,
+  };
+
+  Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false });
+}
+
+function renderCompareTable(results, selectedMetric, data) {
+  const thead = document.getElementById("compare-full-thead");
+  const tbody = document.getElementById("compare-full-tbody");
+  if (!thead || !tbody || !results.length) return;
+
+  // Collect all scalar metric keys
+  const metricKeys = [];
+  const seen = new Set();
+  results.forEach(r => Object.keys(r.metrics || {}).forEach(k => {
+    if (!_SKIP_METRICS.has(k) && typeof r.metrics[k] === "number" && !seen.has(k)) {
+      seen.add(k); metricKeys.push(k);
+    }
+  }));
+
+  // Header
+  thead.innerHTML = `<th>Rank</th><th>Algorithm</th><th>Time</th>` +
+    metricKeys.map(k =>
+      `<th style="${ k === selectedMetric ? 'color:var(--accent-amber-light); background:rgba(251,191,36,0.08);' : '' }">
+        ${_METRIC_LABELS[k] || k}</th>`
+    ).join("");
+
+  // Rows
+  tbody.innerHTML = results.map((r, idx) => {
+    const rankEmoji = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx+1}`;
+    const cells = metricKeys.map(k => {
+      const v = r.metrics[k];
+      const isSelected = k === selectedMetric;
+      const display = typeof v === "number" ? v.toFixed(4) : "—";
+      return `<td style="${ isSelected ? 'color:var(--accent-amber-light); font-weight:600; background:rgba(251,191,36,0.05);' : '' } font-family:var(--font-mono); font-size:12px;">${display}</td>`;
+    }).join("");
+    return `<tr>
+      <td><strong style="color:${ idx===0?'var(--accent-amber-light)':idx===1?'#adbac7':'var(--text-muted)'}; font-family:var(--font-mono);">${rankEmoji}</strong></td>
+      <td><span class="badge ${idx===0?'badge-valid':'badge-algo'}">${r.algorithm}</span></td>
+      <td style="font-family:var(--font-mono); font-size:12px;">${(r.training_time_sec??0).toFixed(3)}s</td>
+      ${cells}
+    </tr>`;
+  }).join("");
+}
+
+function renderOverallRankings(allResults) {
+  // Composite score: for each algorithm, compute its average rank across all scalar metrics
+  const tbody = document.querySelector("#ml-leaderboard-table tbody");
+  if (!tbody) return;
+
+  const metricKeys = [];
+  const seen = new Set();
+  allResults.forEach(r => Object.keys(r.metrics||{}).forEach(k => {
+    if (!_SKIP_METRICS.has(k) && typeof r.metrics[k] === "number" && !seen.has(k)) {
+      seen.add(k); metricKeys.push(k);
+    }
+  }));
+
+  // For each metric, rank all algorithms
+  const rankSums = {}; // algorithm -> sum of ranks
+  const countMap = {};
+  allResults.forEach(r => { rankSums[r.algorithm] = 0; countMap[r.algorithm] = 0; });
+
+  metricKeys.forEach(k => {
+    const lowerBetter = _LOWER_IS_BETTER.has(k);
+    const sorted = [...allResults]
+      .filter(r => typeof r.metrics?.[k] === "number")
+      .sort((a,b) => lowerBetter ? a.metrics[k]-b.metrics[k] : b.metrics[k]-a.metrics[k]);
+    sorted.forEach((r, i) => { rankSums[r.algorithm] += (i+1); countMap[r.algorithm]++; });
+  });
+
+  // Composite score = 1 / avgRank (higher = better)
+  const ranked = allResults.map(r => ({
+    algorithm: r.algorithm,
+    composite: countMap[r.algorithm] > 0 ? (rankSums[r.algorithm] / countMap[r.algorithm]) : 999,
+    metrics: r.metrics || {},
+    training_time_sec: r.training_time_sec || 0,
+  })).sort((a,b) => a.composite - b.composite);
+
+  const KEY_METRICS = ["accuracy","f1","precision","recall","mcc","roc_auc","balanced_accuracy"];
+  const rankEmojis = ["🥇","🥈","🥉"];
+
+  tbody.innerHTML = ranked.map((r, idx) => {
+    const emoji = rankEmojis[idx] || `#${idx+1}`;
+    const compositeScore = (1 / r.composite).toFixed(4);
+    const keyCells = KEY_METRICS.map(k => {
+      const v = r.metrics[k];
+      return `<td style="font-family:var(--font-mono); font-size:12px;">${typeof v==="number"?v.toFixed(4):"—"}</td>`;
+    }).join("");
+    return `<tr>
+      <td><strong style="color:${idx===0?'var(--accent-amber-light)':idx===1?'#adbac7':'var(--text-muted)'}; font-family:var(--font-mono);">${emoji}</strong></td>
+      <td><span class="badge ${idx===0?'badge-valid':'badge-algo'}">${r.algorithm}</span></td>
+      <td><strong style="color:var(--accent-cyan-light); font-family:var(--font-mono); font-size:14px;">${compositeScore}</strong></td>
+      ${keyCells}
+      <td style="font-family:var(--font-mono); font-size:12px;">${r.training_time_sec.toFixed(3)}s</td>
+    </tr>`;
+  }).join("");
 }
 
 // ── Prediction ──────────────────────────────────────────────────

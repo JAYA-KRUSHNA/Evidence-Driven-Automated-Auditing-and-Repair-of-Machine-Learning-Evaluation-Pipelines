@@ -173,10 +173,15 @@ class ExperimentTracker:
                     target_column=target_col,
                 )
 
-            # 2. Record EvaluationResult entries for scalar metrics
+            # 2. Record EvaluationResult entries for scalar metrics only.
+            # Non-scalar metrics (confusion_matrix, per_class, class_labels) are
+            # stored in the model's metrics JSON column and returned via models[].metrics.
+            _NON_SCALAR = {"confusion_matrix", "per_class", "class_labels", "mape_note"}
             model_id = model_record["id"] if model_record else None
             for metric_name, metric_value in metrics.items():
-                if isinstance(metric_value, (int, float)):
+                if metric_name in _NON_SCALAR:
+                    continue  # stored in JSON column, not as scalar EvaluationResult rows
+                if isinstance(metric_value, (int, float)) and metric_value is not None:
                     eval_rec = EvaluationResult(
                         experiment_id=experiment_id,
                         model_id=model_id,

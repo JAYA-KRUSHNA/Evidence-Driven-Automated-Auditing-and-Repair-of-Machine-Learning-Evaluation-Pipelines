@@ -99,15 +99,19 @@ class ComparisonEngine:
                     "cv_scores": [], "error": str(exc),
                 })
 
-        # Rank by ranking metric
+        # Rank by ranking metric — use only scalar values for sorting
+        _NON_SCALAR = {"confusion_matrix", "per_class", "class_labels", "mape_note"}
         metric = result.ranking_metric
         valid = [r for r in result.results if metric in r.get("metrics", {})]
         if valid:
-            # Higher is better for accuracy/r2; lower for rmse/mae (handle both)
             reverse = metric not in ("mae", "mse", "rmse", "mape")
-            valid.sort(key=lambda x: x["metrics"].get(metric, 0), reverse=reverse)
+            valid.sort(
+                key=lambda x: x["metrics"].get(metric, 0) if isinstance(x["metrics"].get(metric, 0), (int, float)) else 0,
+                reverse=reverse,
+            )
             result.results = valid + [r for r in result.results if r not in valid]
             result.best_algorithm = valid[0]["algorithm"]
+            # best_metrics: return full metrics (including confusion_matrix) for the winner
             result.best_metrics = valid[0]["metrics"]
 
         logger.info(
