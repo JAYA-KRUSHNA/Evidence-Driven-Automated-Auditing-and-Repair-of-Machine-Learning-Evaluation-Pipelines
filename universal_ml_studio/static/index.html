@@ -15,7 +15,16 @@
     <!-- ── Sidebar Navigation ──────────────────────────────────────── -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-icon">AI</div>
+        <div class="brand-icon" title="Veritas Neural Audit Shield">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L3 7V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V7L12 2Z" fill="rgba(255,255,255,0.18)" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/>
+            <circle cx="12" cy="11.5" r="2.8" fill="#ffffff"/>
+            <circle cx="8" cy="8.5" r="1.4" fill="#67e8f9"/>
+            <circle cx="16" cy="8.5" r="1.4" fill="#c0c1ff"/>
+            <circle cx="12" cy="16.5" r="1.4" fill="#6ee7b7"/>
+            <path d="M8 8.5L12 11.5M16 8.5L12 11.5M12 11.5L12 16.5" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
         <div class="brand-info">
           <div class="brand-text">Universal ML Studio</div>
           <div class="brand-tag"><span class="brand-tag-dot"></span> Platform Active</div>
@@ -76,7 +85,7 @@
 
       <div class="sidebar-footer">
         <div class="sidebar-links-row">
-          <span class="status-badge"><span class="status-dot"></span> Backend Live</span>
+          <span class="status-badge"><span class="status-dot"></span> 🐍 Python • Live</span>
           <a href="/docs" target="_blank" class="swagger-link">Swagger Docs ↗</a>
         </div>
       </div>
@@ -103,6 +112,15 @@
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
             Load Dataset
           </button>
+          <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light / Dark Theme" aria-label="Toggle Theme">
+            <div class="theme-toggle-track">
+              <span class="theme-toggle-thumb">
+                <svg class="theme-icon-dark" width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <svg class="theme-icon-light" width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+              </span>
+            </div>
+            <span class="theme-toggle-text" id="theme-status-text">DARK</span>
+          </button>
         </div>
       </header>
 
@@ -112,7 +130,9 @@
           <!-- Bento KPI Cards Row -->
           <div class="kpi-grid">
             <div class="kpi-card">
-              <div class="kpi-icon indigo">📁</div>
+              <div class="kpi-icon indigo">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+              </div>
               <div class="kpi-body">
                 <div class="kpi-label">Active Dataset</div>
                 <div class="kpi-val" id="kpi-dataset-name">No Dataset</div>
@@ -120,7 +140,9 @@
               </div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-icon cyan">📊</div>
+              <div class="kpi-icon cyan">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16M9 4v16m6-16v16"></path></svg>
+              </div>
               <div class="kpi-body">
                 <div class="kpi-label">Dimensions</div>
                 <div class="kpi-val" id="kpi-dimensions">0 × 0</div>
@@ -128,7 +150,9 @@
               </div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-icon emerald">🛡️</div>
+              <div class="kpi-icon emerald">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+              </div>
               <div class="kpi-body">
                 <div class="kpi-label">Validation Status</div>
                 <div class="kpi-val" id="kpi-validation-status">Pending</div>
@@ -136,7 +160,9 @@
               </div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-icon amber">🤖</div>
+              <div class="kpi-icon amber">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M3 9h2m-2 6h2m14-6h2m-2 6h2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z"></path></svg>
+              </div>
               <div class="kpi-body">
                 <div class="kpi-label">Trained Models</div>
                 <div class="kpi-val" id="kpi-models-count">0</div>
@@ -150,7 +176,9 @@
             <div class="glass-card">
               <div class="card-header">
                 <div class="card-title">
-                  <span class="card-title-icon">🚀</span> Fast-Track Pipeline Execution
+                  <span class="card-title-icon" style="color:var(--accent-indigo);">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                  </span> Fast-Track Pipeline Execution
                 </div>
                 <span class="badge badge-algo">Pipeline Mode</span>
               </div>
@@ -161,7 +189,7 @@
                 <div class="pipeline-step" onclick="showTab('datasets')">
                   <span class="pipeline-step-badge badge-info">STEP 1</span>
                   <div class="pipeline-step-content">
-                    <div class="pipeline-step-title">Ingestion &amp; Library Selection</div>
+                    <div class="pipeline-step-title">📥 Ingestion &amp; Library Selection</div>
                     <div class="pipeline-step-desc">Upload custom CSV/XLSX or choose from 7 built-in benchmark datasets.</div>
                   </div>
                   <span style="color:var(--text-dim); font-size:12px;">Go →</span>
@@ -169,7 +197,7 @@
                 <div class="pipeline-step" onclick="showTab('validation')">
                   <span class="pipeline-step-badge badge-valid">STEP 2</span>
                   <div class="pipeline-step-content">
-                    <div class="pipeline-step-title">4-Tier Automated Validation</div>
+                    <div class="pipeline-step-title">🛡️ 4-Tier Automated Validation</div>
                     <div class="pipeline-step-desc">Audits 30+ quality checkpoints across integrity, schemas, and leakage vectors.</div>
                   </div>
                   <span style="color:var(--text-dim); font-size:12px;">Go →</span>
@@ -177,7 +205,7 @@
                 <div class="pipeline-step" onclick="showTab('eda')">
                   <span class="pipeline-step-badge badge-warning">STEP 3</span>
                   <div class="pipeline-step-content">
-                    <div class="pipeline-step-title">EDA &amp; Adaptive Cleaning</div>
+                    <div class="pipeline-step-title">📊 EDA &amp; Adaptive Cleaning</div>
                     <div class="pipeline-step-desc">Explore feature correlations, impute nulls, encode categoricals, and scale tensors.</div>
                   </div>
                   <span style="color:var(--text-dim); font-size:12px;">Go →</span>
@@ -185,7 +213,7 @@
                 <div class="pipeline-step" onclick="showTab('ml')">
                   <span class="pipeline-step-badge badge-algo">STEP 4</span>
                   <div class="pipeline-step-content">
-                    <div class="pipeline-step-title">AutoML &amp; Real-Time Inference</div>
+                    <div class="pipeline-step-title">⚡ AutoML &amp; Real-Time Inference</div>
                     <div class="pipeline-step-desc">Auto-identifies task type, benchmarks classifiers/regressors, and serves predictions.</div>
                   </div>
                   <span style="color:var(--text-dim); font-size:12px;">Go →</span>
@@ -197,7 +225,9 @@
             <div class="glass-card">
               <div class="card-header">
                 <div class="card-title">
-                  <span class="card-title-icon">⚡</span> Quick Dataset Launcher
+                  <span class="card-title-icon" style="color:var(--accent-cyan);">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                  </span> Quick Dataset Launcher
                 </div>
                 <span class="badge badge-info">Instant Load</span>
               </div>
@@ -206,23 +236,61 @@
               </p>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                 <button class="btn btn-secondary btn-sm" onclick="loadSample('iris')" style="justify-content:flex-start; padding:12px;">
-                  🌸 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">Iris</div><div style="font-size:11px; color:var(--text-dim);">Classification • 150 rows</div></div>
+                  <span style="font-size:18px; margin-right:8px;">🌸</span>
+                  <div style="text-align:left;"><div style="font-weight:700;">Iris</div><div style="font-size:11px; color:var(--text-dim);">Classification • 150 rows</div></div>
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="loadSample('wine')" style="justify-content:flex-start; padding:12px;">
-                  🍷 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">Wine</div><div style="font-size:11px; color:var(--text-dim);">3-Class • 178 rows</div></div>
+                  <span style="font-size:18px; margin-right:8px;">🍷</span>
+                  <div style="text-align:left;"><div style="font-weight:700;">Wine</div><div style="font-size:11px; color:var(--text-dim);">3-Class • 178 rows</div></div>
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="loadSample('breast_cancer')" style="justify-content:flex-start; padding:12px;">
-                  🧬 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">Breast Cancer</div><div style="font-size:11px; color:var(--text-dim);">Binary • 569 rows</div></div>
+                  <span style="font-size:18px; margin-right:8px;">🔬</span>
+                  <div style="text-align:left;"><div style="font-weight:700;">Breast Cancer</div><div style="font-size:11px; color:var(--text-dim);">Binary • 569 rows</div></div>
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="loadSample('titanic')" style="justify-content:flex-start; padding:12px;">
-                  🚢 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">Titanic</div><div style="font-size:11px; color:var(--text-dim);">Mixed Data • 891 rows</div></div>
+                  <span style="font-size:18px; margin-right:8px;">🚢</span>
+                  <div style="text-align:left;"><div style="font-weight:700;">Titanic</div><div style="font-size:11px; color:var(--text-dim);">Mixed Data • 891 rows</div></div>
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="loadSample('california_housing')" style="justify-content:flex-start; padding:12px;">
-                  🏡 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">California Housing</div><div style="font-size:11px; color:var(--text-dim);">Regression • 20k rows</div></div>
+                  <span style="font-size:18px; margin-right:8px;">🏠</span>
+                  <div style="text-align:left;"><div style="font-weight:700;">California Housing</div><div style="font-size:11px; color:var(--text-dim);">Regression • 20k rows</div></div>
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="loadSample('diabetes_regression')" style="justify-content:flex-start; padding:12px;">
-                  🩸 <div style="text-align:left; margin-left:6px;"><div style="font-weight:700;">Diabetes</div><div style="font-size:11px; color:var(--text-dim);">Progression • 442 rows</div></div>
+                  <span style="font-size:18px; margin-right:8px;">📈</span>
+                  <div style="text-align:left;"><div style="font-weight:700;">Diabetes</div><div style="font-size:11px; color:var(--text-dim);">Progression • 442 rows</div></div>
                 </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Minimal Live Platform Status -->
+          <div class="glass-card" style="margin-top: 20px; padding: 16px 20px;">
+            <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="status-dot"></span>
+                <span style="font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--text-bright);">Universal ML Studio Engine</span>
+                <span class="badge badge-valid" style="font-size:10px;">OPERATIONAL</span>
+              </div>
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:18px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">
+                <span style="display:inline-flex; align-items:center; gap:5px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-indigo);"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  <strong style="color:var(--accent-indigo);">FastAPI</strong> Backend
+                </span>
+                <span>•</span>
+                <span style="display:inline-flex; align-items:center; gap:5px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-cyan);"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  <strong style="color:var(--accent-cyan);">Scikit-Learn</strong> ML Models
+                </span>
+                <span>•</span>
+                <span style="display:inline-flex; align-items:center; gap:5px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-emerald);"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                  <strong style="color:var(--accent-emerald);">4-Tier</strong> Integrity Audit
+                </span>
+                <span>•</span>
+                <span style="display:inline-flex; align-items:center; gap:5px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-amber);"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                  <strong style="color:var(--accent-amber);">Plotly</strong> Diagnostic Engine
+                </span>
               </div>
             </div>
           </div>
@@ -251,7 +319,7 @@
                 <div class="card-title">
                   <span class="card-title-icon">📦</span> Built-in Benchmark Datasets
                 </div>
-                <span class="badge badge-algo">Sklearn Datasets</span>
+                <span class="badge badge-algo">⚡ Scikit-Learn Datasets</span>
               </div>
               <div class="sample-grid" id="samples-container">
                 <!-- Dynamically loaded -->
@@ -293,11 +361,11 @@
               <button class="btn btn-primary" onclick="runValidation()">▶ Run Validation</button>
             </div>
             <div class="kpi-grid" id="val-summary-cards" style="margin-bottom:0; margin-top:16px;">
-              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">Status</div><div class="kpi-val" id="val-status">-</div></div></div>
-              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">Total Checks</div><div class="kpi-val" id="val-total">-</div></div></div>
-              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">Passed</div><div class="kpi-val" id="val-passed" style="color:var(--accent-emerald);">-</div></div></div>
-              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">Warnings</div><div class="kpi-val" id="val-warnings" style="color:var(--accent-amber);">-</div></div></div>
-              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">Failed</div><div class="kpi-val" id="val-failed" style="color:var(--accent-rose);">-</div></div></div>
+              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">📋 Status</div><div class="kpi-val" id="val-status">-</div></div></div>
+              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">🔢 Total Checks</div><div class="kpi-val" id="val-total">-</div></div></div>
+              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">✅ Passed</div><div class="kpi-val" id="val-passed" style="color:var(--accent-emerald);">-</div></div></div>
+              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">⚠️ Warnings</div><div class="kpi-val" id="val-warnings" style="color:var(--accent-amber);">-</div></div></div>
+              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">❌ Failed</div><div class="kpi-val" id="val-failed" style="color:var(--accent-rose);">-</div></div></div>
             </div>
           </div>
 
@@ -348,7 +416,7 @@
             <button class="eda-subtab-btn" onclick="switchEDASubtab('univariate')">📉 4. Univariate</button>
             <button class="eda-subtab-btn" onclick="switchEDASubtab('bivariate')">🔗 5. Bivariate</button>
             <button class="eda-subtab-btn" onclick="switchEDASubtab('multivariate')">🌐 6. Multivariate</button>
-            <button class="eda-subtab-btn" onclick="switchEDASubtab('outliers')">🎯 7. Outliers</button>
+            <button class="eda-subtab-btn" onclick="switchEDASubtab('outliers')">🔍 7. Outliers</button>
             <button class="eda-subtab-btn" onclick="switchEDASubtab('target')">🎯 8. Target</button>
             <button class="eda-subtab-btn" onclick="switchEDASubtab('features')">⚡ 9. Features</button>
             <button class="eda-subtab-btn" onclick="switchEDASubtab('insights')">💡 10. AI Insights</button>
@@ -686,23 +754,23 @@
                 Generate publication-ready diagnostic reports containing executive summaries, quality logs, descriptive distributions, correlation rankings, outlier analyses, and AI recommendations.
               </p>
               <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
-                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px; text-align:center;">
+                <div style="background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:18px; text-align:center;">
                   <div style="font-size:32px; margin-bottom:10px;">🌐</div>
-                  <strong style="color:#fff; font-size:15px; display:block; margin-bottom:6px;">HTML Dashboard</strong>
+                  <strong style="color:var(--text-bright); font-size:15px; display:block; margin-bottom:6px;">HTML Dashboard</strong>
                   <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Standalone, responsive HTML report with embedded styles and tables.</p>
                   <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('html')">📥 Download HTML</button>
                 </div>
 
-                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px; text-align:center;">
+                <div style="background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:18px; text-align:center;">
                   <div style="font-size:32px; margin-bottom:10px;">📑</div>
-                  <strong style="color:#fff; font-size:15px; display:block; margin-bottom:6px;">PDF Document</strong>
+                  <strong style="color:var(--text-bright); font-size:15px; display:block; margin-bottom:6px;">PDF Document</strong>
                   <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Professional multi-page publication document created via ReportLab.</p>
                   <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('pdf')">📥 Download PDF</button>
                 </div>
 
-                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px; text-align:center;">
+                <div style="background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:18px; text-align:center;">
                   <div style="font-size:32px; margin-bottom:10px;">📊</div>
-                  <strong style="color:#fff; font-size:15px; display:block; margin-bottom:6px;">Excel Workbook (.xlsx)</strong>
+                  <strong style="color:var(--text-bright); font-size:15px; display:block; margin-bottom:6px;">Excel Workbook (.xlsx)</strong>
                   <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Formatted multi-tab spreadsheet with overview, stats, quality, and insights.</p>
                   <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('excel')">📥 Download Excel</button>
                 </div>
@@ -752,20 +820,20 @@
                 <div class="form-group">
                   <label class="form-label">Operation</label>
                   <select id="prep-op-type" class="form-select">
-                    <option value="impute">Impute Missing</option>
-                    <option value="encode">Encode Categorical</option>
-                    <option value="scale">Scale Features</option>
-                    <option value="outliers">Handle Outliers</option>
-                    <option value="datetime">Extract Datetime</option>
+                    <option value="impute">🩹 Impute Missing</option>
+                    <option value="encode">🏷️ Encode Categorical</option>
+                    <option value="scale">⚖️ Scale Features</option>
+                    <option value="outliers">🔍 Handle Outliers</option>
+                    <option value="datetime">📅 Extract Datetime</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Strategy / Method</label>
                   <select id="prep-strategy" class="form-select">
-                    <option value="mean">Mean / Standard / Label / IQR Cap</option>
-                    <option value="median">Median / MinMax / ZScore</option>
-                    <option value="mode">Mode / OneHot</option>
-                    <option value="robust">Robust Scale</option>
+                    <option value="mean">📊 Mean / Standard / Label / IQR Cap</option>
+                    <option value="median">🎯 Median / MinMax / ZScore</option>
+                    <option value="mode">🔢 Mode / OneHot</option>
+                    <option value="robust">🛡️ Robust Scale</option>
                   </select>
                 </div>
               </div>
@@ -841,7 +909,49 @@
             </div>
           </div>
 
-          <!-- ═══ Metric Comparison & Rankings Panel ═══ -->
+          <!-- ═══ ML Model Visualizations Panel (shown after training) ═══ -->
+          <div class="glass-card" id="ml-viz-panel" style="display:none; margin-bottom:24px;">
+            <div class="card-header" style="flex-wrap:wrap; gap:12px; align-items:flex-start;">
+              <div class="card-title">
+                <span class="card-title-icon">📊</span> Model Visualizations
+                <span class="badge badge-info" id="viz-algo-badge" style="margin-left:8px; font-size:10px;"></span>
+              </div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
+                  onclick="showVizTab('confusion')" id="viz-tab-confusion">🗳️ Confusion Matrix</button>
+                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
+                  onclick="showVizTab('radar')" id="viz-tab-radar">🕸️ Metric Radar</button>
+                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
+                  onclick="showVizTab('cv')" id="viz-tab-cv">📈 CV Folds</button>
+                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
+                  onclick="showVizTab('bar')" id="viz-tab-bar">📏 Metrics Bar</button>
+                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
+                  onclick="showVizTab('feature')" id="viz-tab-feature">🌳 Feature Importance</button>
+                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
+                  onclick="showVizTab('perclass')" id="viz-tab-perclass">🎯 Per-Class</button>
+                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
+                  onclick="showVizTab('gauge')" id="viz-tab-gauge">⚡ Gauges</button>
+                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
+                  onclick="showVizTab('history')" id="viz-tab-history">📅 History</button>
+              </div>
+            </div>
+            <!-- Normalize toggle (only relevant for confusion matrix) -->
+            <div id="viz-cm-options" style="padding:0 0 10px; display:flex; gap:10px; align-items:center;">
+              <label style="font-size:11px; color:var(--text-muted);">View:</label>
+              <button class="btn btn-secondary" style="padding:3px 10px; font-size:11px;"
+                onclick="toggleCMNormalize()" id="viz-cm-normalize-btn">Show %</button>
+            </div>
+            <!-- Chart containers — only one shown at a time -->
+            <div id="viz-container-confusion" style="width:100%; min-height:380px;"></div>
+            <div id="viz-container-radar"     style="width:100%; min-height:380px; display:none;"></div>
+            <div id="viz-container-cv"        style="width:100%; min-height:300px; display:none;"></div>
+            <div id="viz-container-bar"       style="width:100%; min-height:320px; display:none;"></div>
+            <div id="viz-container-feature"   style="width:100%; min-height:360px; display:none;"></div>
+            <div id="viz-container-perclass"  style="width:100%; min-height:320px; display:none;"></div>
+            <div id="viz-container-gauge"     style="width:100%; min-height:260px; display:none; display:flex; flex-wrap:wrap; gap:0;"></div>
+            <div id="viz-container-history"   style="width:100%; min-height:300px; display:none;"></div>
+          </div>
+
           <div class="glass-card" id="compare-panel" style="display:none;">
             <div class="card-header" style="flex-wrap:wrap; gap:12px;">
               <div class="card-title">
@@ -860,11 +970,67 @@
               </div>
             </div>
 
-            <!-- Bar chart -->
-            <div id="compare-chart" style="width:100%; height:320px; margin-bottom:4px;"></div>
+            <!-- ─ Chart tabs for compare -->
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;">
+              <button class="btn btn-secondary" style="padding:4px 11px; font-size:11px;"
+                onclick="showCompareTab('bar')" id="ctab-bar">📊 Ranked Bar</button>
+              <button class="btn btn-secondary" style="padding:4px 11px; font-size:11px;"
+                onclick="showCompareTab('grouped')" id="ctab-grouped">📈 Multi-Metric</button>
+              <button class="btn btn-secondary" style="padding:4px 11px; font-size:11px;"
+                onclick="showCompareTab('heatmap')" id="ctab-heatmap">🗺️ Heatmap</button>
+              <button class="btn btn-secondary" style="padding:4px 11px; font-size:11px;"
+                onclick="showCompareTab('scatter')" id="ctab-scatter">&#x26A1; Speed vs Accuracy</button>
+              <button class="btn btn-secondary" style="padding:4px 11px; font-size:11px;"
+                onclick="showCompareTab('cv')" id="ctab-cv">📦 CV Stability</button>
+              <button class="btn btn-secondary" style="padding:4px 11px; font-size:11px;"
+                onclick="showCompareTab('radar')" id="ctab-radar">🕸️ Radar Overlay</button>
+            </div>
+
+            <!-- Single-metric ranked bar -->
+            <div id="compare-chart" style="width:100%; height:340px;"></div>
+
+            <!-- Multi-metric grouped bar -->
+            <div id="compare-grouped-wrap" style="display:none;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <label style="font-size:11px; color:var(--text-muted); white-space:nowrap;">Metrics (Ctrl+click for multi):</label>
+                <select id="compare-grouped-metrics" class="form-select"
+                  style="min-width:260px; padding:5px 10px; font-size:11px;"
+                  onchange="renderGroupedBarChart()" multiple size="5">
+                </select>
+              </div>
+              <div id="compare-grouped-chart" style="width:100%; height:360px;"></div>
+            </div>
+
+            <!-- Algorithm × Metric Heatmap -->
+            <div id="compare-heatmap-wrap" style="display:none;">
+              <div id="compare-heatmap-chart" style="width:100%; height:420px;"></div>
+            </div>
+
+            <!-- Speed vs Accuracy Scatter -->
+            <div id="compare-scatter-wrap" style="display:none;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <label style="font-size:11px; color:var(--text-muted);">Y-axis metric:</label>
+                <select id="compare-scatter-metric" class="form-select"
+                  style="min-width:180px; padding:5px 10px; font-size:11px;"
+                  onchange="renderScatterChart()">
+                </select>
+              </div>
+              <div id="compare-scatter-chart" style="width:100%; height:380px;"></div>
+            </div>
+
+            <!-- CV Stability Box Plot -->
+            <div id="compare-cv-wrap" style="display:none;">
+              <div id="compare-cv-chart" style="width:100%; height:380px;"></div>
+            </div>
+
+            <!-- Radar Overlay -->
+            <div id="compare-radar-wrap" style="display:none;">
+              <div id="compare-radar-chart" style="width:100%; height:440px;"></div>
+            </div>
 
             <!-- Full metrics table -->
-            <div class="table-wrapper" style="margin-top:12px;">
+            <div class="table-wrapper" style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.06); padding-top:16px;">
+              <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.06em;">Full Metrics Table</div>
               <table class="data-table" id="compare-full-table">
                 <thead><tr id="compare-full-thead"></tr></thead>
                 <tbody id="compare-full-tbody"></tbody>

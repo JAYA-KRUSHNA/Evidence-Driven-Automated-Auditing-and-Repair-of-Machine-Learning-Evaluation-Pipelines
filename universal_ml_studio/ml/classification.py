@@ -186,6 +186,41 @@ class ClassificationEngine:
             except Exception:
                 pass
 
+            # Feature importances (tree-based models)
+            try:
+                if hasattr(model, "feature_importances_") and feature_cols:
+                    fi = sorted(
+                        zip(feature_cols, model.feature_importances_.tolist()),
+                        key=lambda x: x[1], reverse=True
+                    )[:30]
+                    metrics["feature_importances"] = [
+                        {"name": str(n), "importance": round(float(v), 6)} for n, v in fi
+                    ]
+            except Exception:
+                pass
+
+            # Feature coefficients (linear models like logistic regression)
+            try:
+                if hasattr(model, "coef_") and feature_cols:
+                    coef_arr = model.coef_
+                    # For binary: shape (1, n_features); for multiclass: (n_classes, n_features)
+                    if coef_arr.ndim == 2 and coef_arr.shape[0] == 1:
+                        coef_vals = coef_arr[0].tolist()
+                    elif coef_arr.ndim == 2:
+                        # Mean absolute coef across classes
+                        coef_vals = np.abs(coef_arr).mean(axis=0).tolist()
+                    else:
+                        coef_vals = coef_arr.tolist()
+                    fc = sorted(
+                        zip(feature_cols, coef_vals),
+                        key=lambda x: abs(x[1]), reverse=True
+                    )[:30]
+                    metrics["feature_coef"] = [
+                        {"name": str(n), "coef": round(float(v), 6)} for n, v in fc
+                    ]
+            except Exception:
+                pass
+
             result.metrics = metrics
 
             # Cross-validation
