@@ -16,7 +16,7 @@ Public API
 import json
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
@@ -26,7 +26,7 @@ import pandas as pd
 try:
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import letter
-    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
     REPORTLAB_AVAILABLE = True
 except ImportError:
@@ -34,7 +34,7 @@ except ImportError:
 
 from ..config import REPORTS_DIR
 from ..database.connection import get_session
-from ..database.models import Dataset, EDAResult, Experiment, Report, ValidationReport
+from ..database.models import Dataset, EDAResult, Report, ValidationReport
 from ..dataset.registry import DatasetRegistry
 from ..eda.engine import EDAEngine
 from ..experiment.tracker import ExperimentTracker
@@ -89,6 +89,7 @@ class ReportGenerator:
                 val_data = {
                     "dataset_id": dataset_id,
                     "dataset_name": ds.name,
+                    "generated_at": val_rep.created_at.isoformat() if val_rep.created_at else None,
                     "status": val_rep.status,
                     "is_trainable": val_rep.is_trainable,
                     "total_checks": val_rep.total_checks,
@@ -111,7 +112,9 @@ class ReportGenerator:
                 df = DatasetRegistry.load_dataframe(dataset_id)
                 v_res = ValidationEngine.validate(df, {"file_name": ds.original_name, "file_format": ds.file_format})
                 val_data = v_res.to_dict()
+                val_data["dataset_id"] = dataset_id
                 val_data["dataset_name"] = ds.name
+                val_data["generated_at"] = datetime.utcnow().isoformat()
 
             report_id = uuid.uuid4().hex[:12]
             file_name = f"val_{dataset_id}_{report_id}.{format}"
@@ -397,7 +400,7 @@ class ReportGenerator:
             session.delete(r)
             session.commit()
             return True
-        except Exception as e:
+        except Exception:
             session.rollback()
             raise
         finally:
@@ -499,7 +502,7 @@ class ReportGenerator:
         doc = SimpleDocTemplate(str(path), pagesize=letter)
         styles = getSampleStyleSheet()
         story = [
-            Paragraph(f"<b>Universal AI/ML Studio — Experiment Report</b>", styles["Heading1"]),
+            Paragraph("<b>Universal AI/ML Studio — Experiment Report</b>", styles["Heading1"]),
             Spacer(1, 12),
             Paragraph(f"<b>Experiment:</b> {data.get('name', 'N/A')}", styles["Normal"]),
             Paragraph(f"<b>Algorithm:</b> {data.get('algorithm', '')} ({data.get('task_type', '')})", styles["Normal"]),

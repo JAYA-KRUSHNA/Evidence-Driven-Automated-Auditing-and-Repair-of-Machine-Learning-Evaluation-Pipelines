@@ -340,12 +340,13 @@ class TargetLeakageAudit(BaseAudit):
                 )
 
             # Normalize MI scores
-            if mi_scores.max() > 0:
-                mi_normalized = mi_scores / mi_scores.max()
+            mi_max = mi_scores.max()
+            if mi_max > 0:
+                mi_normalized = mi_scores / mi_max
 
                 for col, mi_norm, mi_raw in zip(X.columns, mi_normalized, mi_scores):
+                    # Flag if normalized score exceeds threshold
                     if mi_norm >= TARGET_LEAKAGE_MUTUAL_INFO_THRESHOLD:
-                        # Don't duplicate findings already caught by correlation
                         findings.append(self._create_finding(
                             severity=Severity.MEDIUM,
                             status=FindingStatus.SUSPECTED,
@@ -373,6 +374,36 @@ class TargetLeakageAudit(BaseAudit):
                             auto_correctable=False,
                         ))
 
+            # Secondary pass: flag any column that has very high raw MI even if
+            # it doesn't top the normalized chart (catches near-perfect predictors
+            # when legitimate features also have high MI)
+            for col, mi_raw in zip(X.columns, mi_scores):
+                if mi_raw > 0.7 and col not in [f.affected_columns[0] for f in findings if f.affected_columns]:
+                    findings.append(self._create_finding(
+                        severity=Severity.HIGH,
+                        status=FindingStatus.SUSPECTED,
+                        description=(
+                            f"Column '{col}' has very high raw mutual information "
+                            f"({mi_raw:.4f}) with the target — possible leakage."
+                        ),
+                        evidence={
+                            "column": col,
+                            "mutual_info_raw": round(float(mi_raw), 4),
+                            "absolute_threshold": 0.7,
+                        },
+                        affected_columns=[col],
+                        explanation=(
+                            f"Raw MI of {mi_raw:.4f} is high enough to indicate the feature "
+                            "likely contains strong target-derived signal."
+                        ),
+                        confidence=min(float(mi_raw) / 1.0, 0.9),
+                        recommendation=(
+                            f"Investigate whether '{col}' is derived from the target "
+                            "or leaks post-outcome information."
+                        ),
+                        auto_correctable=False,
+                    ))
+
         except Exception as e:
             logger.warning(f"Mutual information check failed: {e}")
 
@@ -387,6 +418,8 @@ class TargetLeakageAudit(BaseAudit):
         suspicious_patterns = [
             "label", "class", "target", "outcome", "result",
             "prediction", "predicted", "output", "response",
+            # Leakage-specific patterns:
+            "leak", "leaked", "copy", "derived", "noisy", "encoded_target",
         ]
 
         target_lower = target_name.lower()
@@ -416,6 +449,30 @@ class TargetLeakageAudit(BaseAudit):
                     recommendation=(
                         f"Manually verify that '{col}' is not derived from the target "
                         "and would be available at prediction time."
+                    ),
+                    auto_correctable=False,
+                ))
+            # Check for suspicious keyword patterns
+            elif any(pat in col_lower for pat in suspicious_patterns):
+                findings.append(self._create_finding(
+                    severity=Severity.MEDIUM,
+                    status=FindingStatus.SUSPECTED,
+                    description=(
+                        f"Column '{col}' name contains a suspicious keyword that may indicate leakage."
+                    ),
+                    evidence={
+                        "column": col,
+                        "suspicious_keywords": [p for p in suspicious_patterns if p in col_lower],
+                    },
+                    affected_columns=[col],
+                    explanation=(
+                        f"The feature name '{col}' contains keywords commonly associated with "
+                        "target-derived or leaked features."
+                    ),
+                    confidence=0.5,
+                    recommendation=(
+                        f"Verify that '{col}' is not a copy or transformation of the target, "
+                        "and that it represents information available at prediction time."
                     ),
                     auto_correctable=False,
                 ))

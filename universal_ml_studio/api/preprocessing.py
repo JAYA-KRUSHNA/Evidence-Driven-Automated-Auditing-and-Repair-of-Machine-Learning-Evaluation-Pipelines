@@ -2,9 +2,9 @@
 Preprocessing REST API endpoints.
 """
 
-from typing import Any, Optional
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from ..database.connection import get_session
@@ -68,7 +68,7 @@ def auto_preprocess(dataset_id: str, payload: Optional[AutoPreprocessRequest] = 
 def apply_operation(dataset_id: str, op: OperationRequest):
     """Apply a specific preprocessing step (impute, encode, scale, outliers, datetime)."""
     try:
-        meta = DatasetRegistry.get(dataset_id)
+        DatasetRegistry.get(dataset_id)  # validates dataset exists — raises 404 if not found
         df = DatasetRegistry.load_dataframe(dataset_id)
 
         op_type = op.operation_type.lower()

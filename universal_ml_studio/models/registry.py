@@ -155,7 +155,6 @@ class ModelRegistry:
             session.add(model_file_rec)
 
             # 2. Save label encoder if present
-            le_path_str = ""
             if label_encoder is not None:
                 le_path = model_dir / "label_encoder.joblib"
                 joblib.dump(label_encoder, le_path)
@@ -166,7 +165,6 @@ class ModelRegistry:
                     file_size=le_path.stat().st_size,
                 )
                 session.add(le_file_rec)
-                le_path_str = str(le_path)
 
             # 3. Save preprocessing pipeline if present
             pipeline_path_str = ""
@@ -213,9 +211,9 @@ class ModelRegistry:
             logger.info("Saved model %s (%s) to %s", model_id, name, model_dir)
             return cls._to_dict(trained_model)
 
-        except Exception as e:
+        except Exception:
             session.rollback()
-            logger.exception("Failed to save model: %s", e)
+            logger.exception("Failed to save model")
             raise
         finally:
             session.close()
@@ -323,9 +321,9 @@ class ModelRegistry:
 
             logger.info("Deleted model %s", model_id)
             return True
-        except Exception as e:
+        except Exception:
             session.rollback()
-            logger.exception("Failed to delete model %s: %s", model_id, e)
+            logger.exception("Failed to delete model %s: %s", model_id)
             raise
         finally:
             session.close()
@@ -341,7 +339,7 @@ class ModelRegistry:
         Export a model to a specified destination or format.
         format: 'joblib' (single model file) or 'zip' (bundle with metadata & artifacts)
         """
-        metadata = cls.get(model_id)
+        cls.get(model_id)  # validates model exists — raises if not found
         model_dir = MODELS_DIR / model_id
 
         if format == "joblib":
@@ -388,7 +386,7 @@ class ModelRegistry:
 
             m.is_best = True
             session.commit()
-        except Exception as e:
+        except Exception:
             session.rollback()
             raise
         finally:

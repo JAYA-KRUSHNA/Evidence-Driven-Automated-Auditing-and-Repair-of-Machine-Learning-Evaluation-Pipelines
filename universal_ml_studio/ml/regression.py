@@ -112,12 +112,19 @@ class RegressionEngine:
                 "r2":   round(r2, 4),
             }
 
-            # MAPE (careful with zeros)
+            # MAPE — only valid when y_test has no zeros (avoids division-by-zero)
             try:
-                mape = float(mean_absolute_percentage_error(y_test, y_pred))
-                metrics["mape"] = round(mape, 4)
+                if (y_test == 0).any():
+                    # MAPE is mathematically undefined when true values include zero.
+                    # Binary targets (0/1) always trigger this — skip MAPE silently.
+                    metrics["mape"] = None
+                    metrics["mape_note"] = "MAPE undefined: target contains zero values"
+                else:
+                    mape = float(mean_absolute_percentage_error(y_test, y_pred))
+                    # Cap at 10 (1000%) — anything above is clearly garbage
+                    metrics["mape"] = round(min(mape, 10.0), 4)
             except Exception:
-                pass
+                metrics["mape"] = None
 
             result.metrics = metrics
 

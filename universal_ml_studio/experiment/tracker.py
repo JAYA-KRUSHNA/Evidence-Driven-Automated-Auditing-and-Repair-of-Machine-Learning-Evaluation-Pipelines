@@ -16,12 +16,11 @@ Public API
 import logging
 import shutil
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Optional
 
 from ..config import DEFAULT_CV_FOLDS, DEFAULT_RANDOM_SEED, DEFAULT_TEST_SIZE, MODELS_DIR
 from ..database.connection import get_session
-from ..database.models import Dataset, EvaluationResult, Experiment, Prediction, TrainedModel
+from ..database.models import Dataset, Experiment, EvaluationResult, Prediction
 from ..models.registry import ModelRegistry
 
 logger = logging.getLogger(__name__)
@@ -77,9 +76,9 @@ class ExperimentTracker:
             session.commit()
             logger.info("Created experiment %s (%s)", exp.id, exp_name)
             return cls._to_dict(exp)
-        except Exception as e:
+        except Exception:
             session.rollback()
-            logger.exception("Failed to create experiment: %s", e)
+            logger.exception("Failed to create experiment")
             raise
         finally:
             session.close()
@@ -109,7 +108,7 @@ class ExperimentTracker:
 
             session.commit()
             return cls._to_dict(exp)
-        except Exception as e:
+        except Exception:
             session.rollback()
             raise
         finally:
@@ -206,9 +205,9 @@ class ExperimentTracker:
             session.commit()
 
             return cls._to_dict(exp)
-        except Exception as e:
+        except Exception:
             session.rollback()
-            logger.exception("Failed to save experiment results: %s", e)
+            logger.exception("Failed to save experiment results")
             raise
         finally:
             session.close()
@@ -247,7 +246,7 @@ class ExperimentTracker:
                 "confidence": confidence,
                 "created_at": pred_record.created_at.isoformat() if pred_record.created_at else None,
             }
-        except Exception as e:
+        except Exception:
             session.rollback()
             raise
         finally:
@@ -350,7 +349,7 @@ class ExperimentTracker:
             session.commit()
             logger.info("Deleted experiment %s", experiment_id)
             return True
-        except Exception as e:
+        except Exception:
             session.rollback()
             raise
         finally:

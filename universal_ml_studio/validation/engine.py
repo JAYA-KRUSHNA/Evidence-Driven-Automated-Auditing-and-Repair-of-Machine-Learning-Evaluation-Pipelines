@@ -19,7 +19,7 @@ Public API
 import logging
 import math
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -34,7 +34,6 @@ from ..config import (
     CLASS_IMBALANCE_RATIO,
     MIN_SAMPLES_PER_CLASS,
     OUTLIER_IQR_MULTIPLIER,
-    OUTLIER_ZSCORE_THRESHOLD,
     CORRELATION_LEAKAGE_THRESHOLD,
     MAX_UNIQUE_FOR_CLASSIFICATION,
     MAX_UPLOAD_SIZE_MB,
@@ -632,7 +631,7 @@ class ValidationEngine:
 
         # 3.7 — Whitespace-only strings
         whitespace_cols = []
-        for col in df.select_dtypes(include=["object", "string"]).columns:
+        for col in df.select_dtypes(include=["object"]).columns:
             ws_count = int(df[col].dropna().apply(
                 lambda x: isinstance(x, str) and len(x.strip()) == 0
             ).sum())

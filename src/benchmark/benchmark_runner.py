@@ -217,9 +217,12 @@ class BenchmarkRunner:
         result.audit_findings_count = audit_result.total_findings
 
         # Map findings to categories for comparison
+        # Include medium/info findings too — benchmark needs broad detection coverage
         detected_cats = set()
         for f in audit_result.findings:
-            if f.status in ("confirmed", "suspected") and f.severity in ("critical", "high"):
+            if f.status in ("confirmed", "suspected", "informational") and f.severity in (
+                "critical", "high", "medium"
+            ):
                 detected_cats.add(f.category)
 
         result.detected_categories = list(detected_cats)

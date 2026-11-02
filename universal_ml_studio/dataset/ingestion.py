@@ -17,7 +17,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from ..config import SUPPORTED_EXTENSIONS, HIGH_CARDINALITY_THRESHOLD
+from ..config import SUPPORTED_EXTENSIONS
 
 logger = logging.getLogger(__name__)
 
@@ -98,10 +98,9 @@ class DatasetIngestion:
         }
 
         # Numerical vs categorical
-        # Include "str" for Pandas 3.x which uses StringDtype by default
         numerical_cols = df.select_dtypes(include=["number"]).columns.tolist()
         categorical_cols = df.select_dtypes(
-            include=["object", "string", "str", "category", "bool"]
+            include=["object", "category", "bool"]
         ).columns.tolist()
 
         # Datetime columns
@@ -156,7 +155,7 @@ class DatasetIngestion:
         Tries pd.to_datetime on a small sample; if ≥80 % parse → date column.
         """
         candidates: list[str] = []
-        for col in df.select_dtypes(include=["object", "string", "str"]).columns:
+        for col in df.select_dtypes(include=["object"]).columns:
             sample = df[col].dropna().head(50)
             if sample.empty:
                 continue

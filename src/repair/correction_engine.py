@@ -170,10 +170,12 @@ class CorrectionEngine:
             )
             result.corrected_experiment = corrected_result
 
-            # Collect after metrics
+            # Collect after metrics (test) and train metrics separately
+            corrected_after_train = {}
             if corrected_result.training_results:
                 first_model = list(corrected_result.training_results.values())[0]
                 result.after_metrics = first_model.test_metrics.copy()
+                corrected_after_train = first_model.train_metrics.copy() if hasattr(first_model, 'train_metrics') else result.after_metrics.copy()
 
             # Step 4: Rerun audit on corrected experiment
             from src.audit.audit_engine import AuditEngine
@@ -206,7 +208,7 @@ class CorrectionEngine:
                 X_test=X_test,
                 y_train=y_train,
                 y_test=y_test,
-                train_metrics=result.after_metrics,
+                train_metrics=corrected_after_train,
                 test_metrics=result.after_metrics,
             )
             result.corrected_audit = corrected_audit

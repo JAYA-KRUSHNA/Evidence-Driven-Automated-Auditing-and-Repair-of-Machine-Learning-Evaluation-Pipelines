@@ -171,7 +171,7 @@ class CorruptionGenerator:
             name="Duplicate Contamination",
             corruption_type="duplicate_contamination",
             description=f"Injected {n_dup} duplicate rows ({n_dup/len(df)*100:.1f}% of original).",
-            ground_truth_issues=["split_contamination", "data_quality"],
+            ground_truth_issues=["split_contamination", "data_quality"],  # duplicates cause both
             config={
                 "n_duplicates": n_dup,
                 "original_indices": dup_indices.tolist()[:20],

@@ -11,7 +11,6 @@ Public API
 import logging
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)

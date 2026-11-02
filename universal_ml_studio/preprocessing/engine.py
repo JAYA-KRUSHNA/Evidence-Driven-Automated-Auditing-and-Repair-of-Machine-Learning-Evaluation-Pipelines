@@ -25,9 +25,8 @@ Public API
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
-import numpy as np
 import pandas as pd
 from sklearn.preprocessing import (
     LabelEncoder,
@@ -138,7 +137,7 @@ class PreprocessingEngine:
 
         # 4. Encode categorical columns
         cat_cols_remaining = [
-            c for c in result_df.select_dtypes(include=["object", "string", "str", "category"]).columns
+            c for c in result_df.select_dtypes(include=["object", "category"]).columns
             if c != target_column
         ]
         if cat_cols_remaining:
@@ -268,7 +267,7 @@ class PreprocessingEngine:
         result = df.copy()
         if columns is None:
             columns = result.select_dtypes(
-                include=["object", "string", "str", "category"]
+                include=["object", "category"]
             ).columns.tolist()
 
         encodings = {}

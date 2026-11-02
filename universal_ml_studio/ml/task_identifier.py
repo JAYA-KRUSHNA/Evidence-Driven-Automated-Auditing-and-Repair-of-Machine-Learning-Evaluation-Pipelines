@@ -6,7 +6,6 @@ Public API
     TaskIdentifier.infer(df, target_column) → dict
 """
 
-import numpy as np
 import pandas as pd
 
 from ..config import MAX_UNIQUE_FOR_CLASSIFICATION
@@ -32,7 +31,9 @@ class TaskIdentifier:
         dtype = series.dtype
 
         # Categorical / boolean / string → classification
-        if dtype == object or str(dtype) in ("category", "bool", "boolean", "str", "string"):
+        if (dtype == object
+                or pd.api.types.is_string_dtype(dtype)
+                or str(dtype) in ("category", "bool", "boolean")):
             return {
                 "task_type": "classification",
                 "confidence": "high",

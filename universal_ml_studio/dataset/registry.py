@@ -19,7 +19,7 @@ import logging
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import pandas as pd
 

@@ -1,0 +1,25 @@
+{
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Darwin",
+  "venvPath": "/opt/anaconda3",
+  "include": [
+    "universal_ml_studio",
+    "src"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.venv"
+  ],
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false,
+  "reportGeneralTypeIssues": false,
+  "reportArgumentType": false,
+  "reportOperatorIssue": false,
+  "reportCallIssue": false,
+  "reportAttributeAccessIssue": false,
+  "reportIndexIssue": false,
+  "reportReturnType": false,
+  "reportAssignmentType": false,
+  "typeCheckingMode": "off"
+}

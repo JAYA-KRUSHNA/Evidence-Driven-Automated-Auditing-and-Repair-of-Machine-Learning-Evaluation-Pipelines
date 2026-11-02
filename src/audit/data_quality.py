@@ -195,6 +195,11 @@ class DataQualityAudit(BaseAudit):
         ]
 
         if constant_cols:
+            col_values = {}
+            for col in constant_cols:
+                non_null = df[col].dropna().unique()
+                col_values[col] = str(non_null[0]) if len(non_null) > 0 else "all_null"
+
             findings.append(self._create_finding(
                 severity=Severity.MEDIUM,
                 status=FindingStatus.CONFIRMED,
@@ -203,12 +208,7 @@ class DataQualityAudit(BaseAudit):
                 ),
                 evidence={
                     "columns": constant_cols,
-                    "values": {
-                        col: str(df[col].dropna().unique()[0])
-                        if df[col].dropna().nunique() == 1
-                        else "all_null"
-                        for col in constant_cols
-                    },
+                    "values": col_values,
                 },
                 affected_columns=constant_cols,
                 explanation=(
