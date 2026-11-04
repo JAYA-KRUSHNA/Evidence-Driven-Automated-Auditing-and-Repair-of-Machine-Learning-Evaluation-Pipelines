@@ -486,11 +486,7 @@
   display: block;
 }
 .theme-toggle-text {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
+  display: none;
 }
 
 * {
@@ -580,6 +576,14 @@ code, .font-mono, .code-metric {
   padding: 4px 8px 18px 8px;
   border-bottom: 1px solid var(--border-subtle);
   position: relative;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition-fast);
+}
+
+.brand:hover {
+  opacity: 0.82;
 }
 
 .brand-icon {
@@ -640,9 +644,10 @@ code, .font-mono, .code-metric {
   font-size: 10px;
   font-weight: 600;
   color: var(--text-dim);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   padding: 12px 10px 6px 10px;
+  opacity: 0.65;
 }
 
 .nav-links {
@@ -797,22 +802,8 @@ code, .font-mono, .code-metric {
   flex-direction: column;
 }
 
-.breadcrumb-trail {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-dim);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-
-.breadcrumb-trail span {
-  color: var(--accent-cyan);
-}
-
 .page-title {
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.02em;
@@ -858,6 +849,8 @@ code, .font-mono, .code-metric {
   overflow-y: auto;
   padding: 28px 32px 72px 32px;
   position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-card) transparent;
 }
 
 .view-section {
