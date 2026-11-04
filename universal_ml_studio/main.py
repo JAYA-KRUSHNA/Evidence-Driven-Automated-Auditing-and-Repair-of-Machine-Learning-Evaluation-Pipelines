@@ -90,17 +90,18 @@ def dashboard():
     return {"message": "Dashboard UI file not found"}
 
 
-@app.get("/", tags=["Health"])
+@app.get("/", tags=["Landing"])
 def root(request: Request):
-    """Welcome endpoint. Returns HTML dashboard to browsers, JSON to API clients."""
+    """Landing page — served to browsers; JSON for API clients."""
     accept = request.headers.get("accept", "")
-    index_file = STATIC_DIR / "index.html"
-    if "text/html" in accept and index_file.exists():
-        return FileResponse(index_file)
+    landing_file = STATIC_DIR / "landing.html"
+    if "text/html" in accept and landing_file.exists():
+        return FileResponse(landing_file)
     return {
         "platform": "Universal AI/ML Studio",
         "version": "1.0.0",
         "status": "online",
+        "landing_url": "/",
         "dashboard_url": "/dashboard",
         "docs_url": "/docs",
         "redoc_url": "/redoc",
