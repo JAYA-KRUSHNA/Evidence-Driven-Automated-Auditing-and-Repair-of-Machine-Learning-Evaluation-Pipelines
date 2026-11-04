@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Universal AI/ML Studio — Intelligent Platform Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css">
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
+
 <body>
   <div class="app-container">
     <!-- ── Sidebar Navigation ──────────────────────────────────────── -->
@@ -17,12 +21,14 @@
       <a href="/" class="brand" title="Back to Home">
         <div class="brand-icon" title="Veritas Neural Audit Shield">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L3 7V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V7L12 2Z" fill="rgba(255,255,255,0.18)" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/>
-            <circle cx="12" cy="11.5" r="2.8" fill="#ffffff"/>
-            <circle cx="8" cy="8.5" r="1.4" fill="#67e8f9"/>
-            <circle cx="16" cy="8.5" r="1.4" fill="#c0c1ff"/>
-            <circle cx="12" cy="16.5" r="1.4" fill="#6ee7b7"/>
-            <path d="M8 8.5L12 11.5M16 8.5L12 11.5M12 11.5L12 16.5" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M12 2L3 7V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V7L12 2Z"
+              fill="rgba(255,255,255,0.18)" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round" />
+            <circle cx="12" cy="11.5" r="2.8" fill="#ffffff" />
+            <circle cx="8" cy="8.5" r="1.4" fill="#67e8f9" />
+            <circle cx="16" cy="8.5" r="1.4" fill="#c0c1ff" />
+            <circle cx="12" cy="16.5" r="1.4" fill="#6ee7b7" />
+            <path d="M8 8.5L12 11.5M16 8.5L12 11.5M12 11.5L12 16.5" stroke="#ffffff" stroke-width="1.2"
+              stroke-linecap="round" />
           </svg>
         </div>
         <div class="brand-info">
@@ -34,51 +40,94 @@
       <ul class="nav-links">
         <li class="nav-category">EXPLORATION &amp; DATA</li>
         <li class="nav-item active" data-tab="overview">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+            </path>
+          </svg>
           Overview
         </li>
         <li class="nav-item" data-tab="datasets">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+            </path>
+          </svg>
           Datasets Hub
         </li>
         <li class="nav-item" data-tab="validation">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
           Data Validation
         </li>
         <li class="nav-item" data-tab="eda">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+            </path>
+          </svg>
           EDA Analysis
         </li>
 
         <li class="nav-category" style="margin-top: 6px;">MODELING &amp; INFERENCE</li>
         <li class="nav-item" data-tab="preprocessing">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+            </path>
+          </svg>
           Preprocessing
         </li>
         <li class="nav-item" data-tab="ml">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
           AutoML &amp; Training
         </li>
         <li class="nav-item" data-tab="prediction">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
           Live Prediction
         </li>
 
         <li class="nav-category" style="margin-top: 6px;">GOVERNANCE &amp; AUDIT</li>
         <li class="nav-item" data-tab="auditor">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+            </path>
+          </svg>
           Pipeline Auditor
         </li>
         <li class="nav-item" data-tab="repair">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+            </path>
+          </svg>
           Pipeline Repair
         </li>
         <li class="nav-item" data-tab="benchmark">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+            </path>
+          </svg>
           Benchmark Lab
         </li>
         <li class="nav-item" data-tab="reports">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+            </path>
+          </svg>
           Reports &amp; Catalog
         </li>
       </ul>
@@ -99,18 +148,31 @@
           </div>
         </div>
         <div class="top-right">
-          <select id="dataset-selector" class="form-select" style="width: 240px;" onchange="handleDatasetSelect(this.value)">
+          <select id="dataset-selector" class="form-select" style="width: 240px;"
+            onchange="handleDatasetSelect(this.value)">
             <option value="">-- Choose Dataset --</option>
           </select>
           <button class="btn btn-primary" onclick="showTab('datasets')">
-            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+            </svg>
             Load Dataset
           </button>
-          <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light / Dark Theme" aria-label="Toggle Theme">
+          <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()"
+            title="Switch Light / Dark Theme" aria-label="Toggle Theme">
             <div class="theme-toggle-track">
               <span class="theme-toggle-thumb">
-                <svg class="theme-icon-dark" width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                <svg class="theme-icon-light" width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg class="theme-icon-dark" width="10" height="10" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+                <svg class="theme-icon-light" width="10" height="10" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                  </path>
+                </svg>
               </span>
             </div>
           </button>
@@ -124,7 +186,10 @@
           <div class="kpi-grid">
             <div class="kpi-card">
               <div class="kpi-icon indigo">
-                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                </svg>
               </div>
               <div class="kpi-body">
                 <div class="kpi-label">Active Dataset</div>
@@ -134,7 +199,10 @@
             </div>
             <div class="kpi-card">
               <div class="kpi-icon cyan">
-                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16M9 4v16m6-16v16"></path></svg>
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 6h16M4 12h16M4 18h16M9 4v16m6-16v16"></path>
+                </svg>
               </div>
               <div class="kpi-body">
                 <div class="kpi-label">Dimensions</div>
@@ -144,7 +212,11 @@
             </div>
             <div class="kpi-card">
               <div class="kpi-icon emerald">
-                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                  </path>
+                </svg>
               </div>
               <div class="kpi-body">
                 <div class="kpi-label">Validation Status</div>
@@ -154,7 +226,11 @@
             </div>
             <div class="kpi-card">
               <div class="kpi-icon amber">
-                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M3 9h2m-2 6h2m14-6h2m-2 6h2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z"></path></svg>
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 3v2m6-2v2M9 19v2m6-2v2M3 9h2m-2 6h2m14-6h2m-2 6h2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2z">
+                  </path>
+                </svg>
               </div>
               <div class="kpi-body">
                 <div class="kpi-label">Trained Models</div>
@@ -170,7 +246,10 @@
               <div class="card-header">
                 <div class="card-title">
                   <span class="card-title-icon" style="color:var(--accent-indigo);">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
                   </span> Fast-Track Pipeline Execution
                 </div>
                 <span class="badge badge-algo">Pipeline Mode</span>
@@ -183,7 +262,8 @@
                   <span class="pipeline-step-badge badge-info">STEP 1</span>
                   <div class="pipeline-step-content">
                     <div class="pipeline-step-title">📥 Ingestion &amp; Library Selection</div>
-                    <div class="pipeline-step-desc">Upload custom CSV/XLSX or choose from 7 built-in benchmark datasets.</div>
+                    <div class="pipeline-step-desc">Upload custom CSV/XLSX or choose from 7 built-in benchmark datasets.
+                    </div>
                   </div>
                   <span style="color:var(--text-dim); font-size:12px;">Go →</span>
                 </div>
@@ -191,7 +271,8 @@
                   <span class="pipeline-step-badge badge-valid">STEP 2</span>
                   <div class="pipeline-step-content">
                     <div class="pipeline-step-title">🛡️ 4-Tier Automated Validation</div>
-                    <div class="pipeline-step-desc">Audits 30+ quality checkpoints across integrity, schemas, and leakage vectors.</div>
+                    <div class="pipeline-step-desc">Audits 30+ quality checkpoints across integrity, schemas, and
+                      leakage vectors.</div>
                   </div>
                   <span style="color:var(--text-dim); font-size:12px;">Go →</span>
                 </div>
@@ -199,7 +280,8 @@
                   <span class="pipeline-step-badge badge-warning">STEP 3</span>
                   <div class="pipeline-step-content">
                     <div class="pipeline-step-title">📊 EDA &amp; Adaptive Cleaning</div>
-                    <div class="pipeline-step-desc">Explore feature correlations, impute nulls, encode categoricals, and scale tensors.</div>
+                    <div class="pipeline-step-desc">Explore feature correlations, impute nulls, encode categoricals, and
+                      scale tensors.</div>
                   </div>
                   <span style="color:var(--text-dim); font-size:12px;">Go →</span>
                 </div>
@@ -207,7 +289,8 @@
                   <span class="pipeline-step-badge badge-algo">STEP 4</span>
                   <div class="pipeline-step-content">
                     <div class="pipeline-step-title">⚡ AutoML &amp; Real-Time Inference</div>
-                    <div class="pipeline-step-desc">Auto-identifies task type, benchmarks classifiers/regressors, and serves predictions.</div>
+                    <div class="pipeline-step-desc">Auto-identifies task type, benchmarks classifiers/regressors, and
+                      serves predictions.</div>
                   </div>
                   <span style="color:var(--text-dim); font-size:12px;">Go →</span>
                 </div>
@@ -219,7 +302,11 @@
               <div class="card-header">
                 <div class="card-title">
                   <span class="card-title-icon" style="color:var(--accent-cyan);">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                      </path>
+                    </svg>
                   </span> Quick Dataset Launcher
                 </div>
                 <span class="badge badge-info">Instant Load</span>
@@ -228,29 +315,53 @@
                 Instantly load standard benchmark datasets into active memory and database registry:
               </p>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('iris')" style="justify-content:flex-start; padding:12px;">
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('iris')"
+                  style="justify-content:flex-start; padding:12px;">
                   <span style="font-size:18px; margin-right:8px;">🌸</span>
-                  <div style="text-align:left;"><div style="font-weight:700;">Iris</div><div style="font-size:11px; color:var(--text-dim);">Classification • 150 rows</div></div>
+                  <div style="text-align:left;">
+                    <div style="font-weight:700;">Iris</div>
+                    <div style="font-size:11px; color:var(--text-dim);">Classification • 150 rows</div>
+                  </div>
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('wine')" style="justify-content:flex-start; padding:12px;">
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('wine')"
+                  style="justify-content:flex-start; padding:12px;">
                   <span style="font-size:18px; margin-right:8px;">🍷</span>
-                  <div style="text-align:left;"><div style="font-weight:700;">Wine</div><div style="font-size:11px; color:var(--text-dim);">3-Class • 178 rows</div></div>
+                  <div style="text-align:left;">
+                    <div style="font-weight:700;">Wine</div>
+                    <div style="font-size:11px; color:var(--text-dim);">3-Class • 178 rows</div>
+                  </div>
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('breast_cancer')" style="justify-content:flex-start; padding:12px;">
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('breast_cancer')"
+                  style="justify-content:flex-start; padding:12px;">
                   <span style="font-size:18px; margin-right:8px;">🔬</span>
-                  <div style="text-align:left;"><div style="font-weight:700;">Breast Cancer</div><div style="font-size:11px; color:var(--text-dim);">Binary • 569 rows</div></div>
+                  <div style="text-align:left;">
+                    <div style="font-weight:700;">Breast Cancer</div>
+                    <div style="font-size:11px; color:var(--text-dim);">Binary • 569 rows</div>
+                  </div>
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('titanic')" style="justify-content:flex-start; padding:12px;">
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('titanic')"
+                  style="justify-content:flex-start; padding:12px;">
                   <span style="font-size:18px; margin-right:8px;">🚢</span>
-                  <div style="text-align:left;"><div style="font-weight:700;">Titanic</div><div style="font-size:11px; color:var(--text-dim);">Mixed Data • 891 rows</div></div>
+                  <div style="text-align:left;">
+                    <div style="font-weight:700;">Titanic</div>
+                    <div style="font-size:11px; color:var(--text-dim);">Mixed Data • 891 rows</div>
+                  </div>
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('california_housing')" style="justify-content:flex-start; padding:12px;">
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('california_housing')"
+                  style="justify-content:flex-start; padding:12px;">
                   <span style="font-size:18px; margin-right:8px;">🏠</span>
-                  <div style="text-align:left;"><div style="font-weight:700;">California Housing</div><div style="font-size:11px; color:var(--text-dim);">Regression • 20k rows</div></div>
+                  <div style="text-align:left;">
+                    <div style="font-weight:700;">California Housing</div>
+                    <div style="font-size:11px; color:var(--text-dim);">Regression • 20k rows</div>
+                  </div>
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="loadSample('diabetes_regression')" style="justify-content:flex-start; padding:12px;">
+                <button class="btn btn-secondary btn-sm" onclick="loadSample('diabetes_regression')"
+                  style="justify-content:flex-start; padding:12px;">
                   <span style="font-size:18px; margin-right:8px;">📈</span>
-                  <div style="text-align:left;"><div style="font-weight:700;">Diabetes</div><div style="font-size:11px; color:var(--text-dim);">Progression • 442 rows</div></div>
+                  <div style="text-align:left;">
+                    <div style="font-weight:700;">Diabetes</div>
+                    <div style="font-size:11px; color:var(--text-dim);">Progression • 442 rows</div>
+                  </div>
                 </button>
               </div>
             </div>
@@ -261,27 +372,44 @@
             <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span class="status-dot"></span>
-                <span style="font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--text-bright);">Universal ML Studio Engine</span>
+                <span
+                  style="font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--text-bright);">Universal
+                  ML Studio Engine</span>
                 <span class="badge badge-valid" style="font-size:10px;">OPERATIONAL</span>
               </div>
-              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:18px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">
+              <div
+                style="display:flex; flex-wrap:wrap; align-items:center; gap:18px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">
                 <span style="display:inline-flex; align-items:center; gap:5px;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-indigo);"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="color:var(--accent-indigo);">
+                    <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
                   <strong style="color:var(--accent-indigo);">FastAPI</strong> Backend
                 </span>
                 <span>•</span>
                 <span style="display:inline-flex; align-items:center; gap:5px;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-cyan);"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="color:var(--accent-cyan);">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6v6l4 2" />
+                  </svg>
                   <strong style="color:var(--accent-cyan);">Scikit-Learn</strong> ML Models
                 </span>
                 <span>•</span>
                 <span style="display:inline-flex; align-items:center; gap:5px;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-emerald);"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="color:var(--accent-emerald);">
+                    <path
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
                   <strong style="color:var(--accent-emerald);">4-Tier</strong> Integrity Audit
                 </span>
                 <span>•</span>
                 <span style="display:inline-flex; align-items:center; gap:5px;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-amber);"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="color:var(--accent-amber);">
+                    <path d="M18 20V10M12 20V4M6 20v-6" />
+                  </svg>
                   <strong style="color:var(--accent-amber);">Plotly</strong> Diagnostic Engine
                 </span>
               </div>
@@ -303,7 +431,8 @@
                 <div class="dropzone-icon">☁️</div>
                 <h4 style="margin-bottom:6px; font-weight:700;">Drop your dataset here or click to browse</h4>
                 <p style="color:var(--text-muted); font-size:12px;">Supports CSV, XLSX, and XLS format up to 200MB</p>
-                <input type="file" id="file-input" style="display:none;" accept=".csv,.xlsx,.xls" onchange="uploadFile(this.files[0])">
+                <input type="file" id="file-input" style="display:none;" accept=".csv,.xlsx,.xls"
+                  onchange="uploadFile(this.files[0])">
               </div>
             </div>
 
@@ -332,7 +461,11 @@
             </div>
             <div class="table-wrapper">
               <table class="data-table" id="dataset-preview-table">
-                <thead><tr><th>Select a dataset to preview columns and data</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Select a dataset to preview columns and data</th>
+                  </tr>
+                </thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -348,17 +481,43 @@
                   <span class="card-title-icon">🛡️</span> 4-Tier Automated Validation Engine
                 </div>
                 <p class="card-subtitle" style="margin-bottom:0; margin-top:4px;">
-                  Executes 30+ quality checkpoints across File Integrity, Structural Soundness, Quality Audits, and ML Readiness.
+                  Executes 30+ quality checkpoints across File Integrity, Structural Soundness, Quality Audits, and ML
+                  Readiness.
                 </p>
               </div>
               <button class="btn btn-primary" onclick="runValidation()">▶ Run Validation</button>
             </div>
             <div class="kpi-grid" id="val-summary-cards" style="margin-bottom:0; margin-top:16px;">
-              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">📋 Status</div><div class="kpi-val" id="val-status">-</div></div></div>
-              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">🔢 Total Checks</div><div class="kpi-val" id="val-total">-</div></div></div>
-              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">✅ Passed</div><div class="kpi-val" id="val-passed" style="color:var(--accent-emerald);">-</div></div></div>
-              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">⚠️ Warnings</div><div class="kpi-val" id="val-warnings" style="color:var(--accent-amber);">-</div></div></div>
-              <div class="kpi-card"><div class="kpi-body"><div class="kpi-label">❌ Failed</div><div class="kpi-val" id="val-failed" style="color:var(--accent-rose);">-</div></div></div>
+              <div class="kpi-card">
+                <div class="kpi-body">
+                  <div class="kpi-label">📋 Status</div>
+                  <div class="kpi-val" id="val-status">-</div>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-body">
+                  <div class="kpi-label">🔢 Total Checks</div>
+                  <div class="kpi-val" id="val-total">-</div>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-body">
+                  <div class="kpi-label">✅ Passed</div>
+                  <div class="kpi-val" id="val-passed" style="color:var(--accent-emerald);">-</div>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-body">
+                  <div class="kpi-label">⚠️ Warnings</div>
+                  <div class="kpi-val" id="val-warnings" style="color:var(--accent-amber);">-</div>
+                </div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-body">
+                  <div class="kpi-label">❌ Failed</div>
+                  <div class="kpi-val" id="val-failed" style="color:var(--accent-rose);">-</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -369,7 +528,8 @@
               </div>
             </div>
             <div id="validation-checks-list">
-              <p style="color:var(--text-dim); font-size:13px;">No validation report generated yet. Click "Run Validation" above.</p>
+              <p style="color:var(--text-dim); font-size:13px;">No validation report generated yet. Click "Run
+                Validation" above.</p>
             </div>
           </div>
         </section>
@@ -382,21 +542,25 @@
               <div>
                 <div class="card-title">📈 Automated Intelligent EDA Engine</div>
                 <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">
-                  Comprehensive profiling, quality auditing, multivariate distributions, outlier diagnosis, and AI insights.
+                  Comprehensive profiling, quality auditing, multivariate distributions, outlier diagnosis, and AI
+                  insights.
                 </div>
               </div>
               <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:6px;">
                   <label class="form-label" style="margin:0; font-size:12px;">Target:</label>
-                  <select id="eda-target-col-select" class="form-select" style="min-width:140px; padding:6px 10px; font-size:12px;">
+                  <select id="eda-target-col-select" class="form-select"
+                    style="min-width:140px; padding:6px 10px; font-size:12px;">
                     <option value="">(Auto-detect)</option>
                   </select>
                 </div>
                 <button class="btn btn-primary" id="btn-run-eda" onclick="runEnhancedEDA()">▶ Run Complete EDA</button>
               </div>
             </div>
-            <div id="eda-overview-box" style="display:flex; gap:20px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
-              <span>Select or compute EDA to view summary statistics, correlation matrix, and missing value profiles.</span>
+            <div id="eda-overview-box"
+              style="display:flex; gap:20px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
+              <span>Select or compute EDA to view summary statistics, correlation matrix, and missing value
+                profiles.</span>
             </div>
           </div>
 
@@ -432,7 +596,8 @@
                 <div>
                   <div class="kpi-label">Dimensions</div>
                   <div class="kpi-val" id="eda-dimensions-val">0 × 0</div>
-                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="eda-cells-val">0 total cells</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="eda-cells-val">0 total cells
+                  </div>
                 </div>
               </div>
               <div class="kpi-card">
@@ -440,7 +605,8 @@
                 <div>
                   <div class="kpi-label">Missing Values</div>
                   <div class="kpi-val" id="eda-missing-val">0 (0.0%)</div>
-                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="eda-missing-cols-val">0 cols affected</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="eda-missing-cols-val">0 cols
+                    affected</div>
                 </div>
               </div>
               <div class="kpi-card">
@@ -448,7 +614,8 @@
                 <div>
                   <div class="kpi-label">Memory Usage</div>
                   <div class="kpi-val" id="eda-memory-val">0.00 MB</div>
-                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="eda-dup-rows-val">0 duplicate rows</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="eda-dup-rows-val">0
+                    duplicate rows</div>
                 </div>
 
               </div>
@@ -456,16 +623,22 @@
 
             <div class="grid-2col">
               <div class="glass-card">
-                <div class="card-header"><div class="card-title">📋 Column Type Distribution</div></div>
+                <div class="card-header">
+                  <div class="card-title">📋 Column Type Distribution</div>
+                </div>
                 <div id="eda-col-types-breakdown" style="display:flex; flex-direction:column; gap:10px;">
-                  <span style="color:var(--text-muted); font-size:13px;">Run EDA to view classification breakdown.</span>
+                  <span style="color:var(--text-muted); font-size:13px;">Run EDA to view classification
+                    breakdown.</span>
                 </div>
               </div>
 
               <div class="glass-card">
-                <div class="card-header"><div class="card-title">🔍 Dataset Integrity & Deduplication</div></div>
+                <div class="card-header">
+                  <div class="card-title">🔍 Dataset Integrity & Deduplication</div>
+                </div>
                 <div id="eda-integrity-summary" style="display:flex; flex-direction:column; gap:10px;">
-                  <span style="color:var(--text-muted); font-size:13px;">Checking for duplicate records and redundant features...</span>
+                  <span style="color:var(--text-muted); font-size:13px;">Checking for duplicate records and redundant
+                    features...</span>
                 </div>
               </div>
             </div>
@@ -481,14 +654,28 @@
               </div>
               <div class="table-wrapper">
                 <table class="data-table" id="eda-quality-issues-table">
-                  <thead><tr><th>Severity</th><th>Column</th><th>Defect Type</th><th>Description</th></tr></thead>
-                  <tbody><tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Run EDA to analyze data quality.</td></tr></tbody>
+                  <thead>
+                    <tr>
+                      <th>Severity</th>
+                      <th>Column</th>
+                      <th>Defect Type</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="4" style="text-align:center; color:var(--text-muted);">Run EDA to analyze data
+                        quality.</td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </div>
 
             <div class="glass-card">
-              <div class="card-header"><div class="card-title">💡 Actionable Data Quality Recommendations</div></div>
+              <div class="card-header">
+                <div class="card-title">💡 Actionable Data Quality Recommendations</div>
+              </div>
               <div id="eda-quality-recommendations-list" style="display:flex; flex-direction:column; gap:10px;">
                 <span style="color:var(--text-muted); font-size:13px;">No recommendations yet.</span>
               </div>
@@ -498,21 +685,51 @@
           <!-- ── Section 3: Statistics ── -->
           <div id="eda-sec-statistics" class="eda-section-view">
             <div class="glass-card" style="margin-bottom:24px;">
-              <div class="card-header"><div class="card-title">📊 Numerical Summary Statistics</div></div>
+              <div class="card-header">
+                <div class="card-title">📊 Numerical Summary Statistics</div>
+              </div>
               <div class="table-wrapper">
                 <table class="data-table" id="eda-stats-table">
-                  <thead><tr><th>Column</th><th>Count</th><th>Mean</th><th>Std</th><th>Min</th><th>25%</th><th>Median</th><th>75%</th><th>Max</th><th>Skew</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Column</th>
+                      <th>Count</th>
+                      <th>Mean</th>
+                      <th>Std</th>
+                      <th>Min</th>
+                      <th>25%</th>
+                      <th>Median</th>
+                      <th>75%</th>
+                      <th>Max</th>
+                      <th>Skew</th>
+                    </tr>
+                  </thead>
                   <tbody></tbody>
                 </table>
               </div>
             </div>
 
             <div class="glass-card">
-              <div class="card-header"><div class="card-title">🏷️ Categorical Summary Statistics</div></div>
+              <div class="card-header">
+                <div class="card-title">🏷️ Categorical Summary Statistics</div>
+              </div>
               <div class="table-wrapper">
                 <table class="data-table" id="eda-cat-stats-table">
-                  <thead><tr><th>Column</th><th>Count</th><th>Unique Levels</th><th>Top Category</th><th>Frequency</th><th>Share (%)</th></tr></thead>
-                  <tbody><tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No categorical features.</td></tr></tbody>
+                  <thead>
+                    <tr>
+                      <th>Column</th>
+                      <th>Count</th>
+                      <th>Unique Levels</th>
+                      <th>Top Category</th>
+                      <th>Frequency</th>
+                      <th>Share (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="6" style="text-align:center; color:var(--text-muted);">No categorical features.</td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -525,11 +742,13 @@
                 <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                   <div class="form-group" style="margin:0;">
                     <label class="form-label" style="font-size:12px; margin-bottom:2px;">Select Column</label>
-                    <select id="eda-uni-col-select" class="form-select" onchange="renderUnivariateSelected()" style="min-width:180px; font-size:13px;"></select>
+                    <select id="eda-uni-col-select" class="form-select" onchange="renderUnivariateSelected()"
+                      style="min-width:180px; font-size:13px;"></select>
                   </div>
                   <div class="form-group" style="margin:0;">
                     <label class="form-label" style="font-size:12px; margin-bottom:2px;">Chart Type</label>
-                    <select id="eda-uni-chart-type" class="form-select" onchange="renderUnivariateSelected()" style="min-width:160px; font-size:13px;">
+                    <select id="eda-uni-chart-type" class="form-select" onchange="renderUnivariateSelected()"
+                      style="min-width:160px; font-size:13px;">
                       <option value="hist_kde">Histogram + KDE</option>
                       <option value="box">Box Plot (Outliers)</option>
                       <option value="violin">Violin Distribution</option>
@@ -543,7 +762,8 @@
 
               <!-- Canvas for Plotly -->
               <div id="eda-univariate-plot" style="min-height:380px; width:100%;">
-                <div style="text-align:center; padding:80px 20px; color:var(--text-muted);">Select a column to generate interactive univariate distribution.</div>
+                <div style="text-align:center; padding:80px 20px; color:var(--text-muted);">Select a column to generate
+                  interactive univariate distribution.</div>
               </div>
             </div>
 
@@ -558,27 +778,42 @@
                 <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                   <div class="form-group" style="margin:0;">
                     <label class="form-label" style="font-size:12px; margin-bottom:2px;">Feature 1 (X-Axis)</label>
-                    <select id="eda-biv-col1-select" class="form-select" onchange="renderBivariateSelected()" style="min-width:160px; font-size:13px;"></select>
+                    <select id="eda-biv-col1-select" class="form-select" onchange="renderBivariateSelected()"
+                      style="min-width:160px; font-size:13px;"></select>
                   </div>
                   <div class="form-group" style="margin:0;">
                     <label class="form-label" style="font-size:12px; margin-bottom:2px;">Feature 2 (Y-Axis)</label>
-                    <select id="eda-biv-col2-select" class="form-select" onchange="renderBivariateSelected()" style="min-width:160px; font-size:13px;"></select>
+                    <select id="eda-biv-col2-select" class="form-select" onchange="renderBivariateSelected()"
+                      style="min-width:160px; font-size:13px;"></select>
                   </div>
                 </div>
-                <button class="btn btn-secondary btn-sm" onclick="renderBivariateSelected()">⚡ Update Relationship</button>
+                <button class="btn btn-secondary btn-sm" onclick="renderBivariateSelected()">⚡ Update
+                  Relationship</button>
               </div>
 
-              <div id="eda-biv-relationship-info" style="margin-bottom:12px; font-size:13px; color:var(--text-muted);"></div>
+              <div id="eda-biv-relationship-info" style="margin-bottom:12px; font-size:13px; color:var(--text-muted);">
+              </div>
               <div id="eda-bivariate-plot" style="min-height:380px; width:100%;">
-                <div style="text-align:center; padding:80px 20px; color:var(--text-muted);">Select feature pair to view scatter, grouped box, or contingency chart.</div>
+                <div style="text-align:center; padding:80px 20px; color:var(--text-muted);">Select feature pair to view
+                  scatter, grouped box, or contingency chart.</div>
               </div>
             </div>
 
             <div class="glass-card">
-              <div class="card-header"><div class="card-title">🏆 Top Pairwise Statistical Associations</div></div>
+              <div class="card-header">
+                <div class="card-title">🏆 Top Pairwise Statistical Associations</div>
+              </div>
               <div class="table-wrapper">
                 <table class="data-table" id="eda-biv-top-pairs-table">
-                  <thead><tr><th>Feature 1</th><th>Feature 2</th><th>Metric</th><th>Score</th><th>Action</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Feature 1</th>
+                      <th>Feature 2</th>
+                      <th>Metric</th>
+                      <th>Score</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
                   <tbody></tbody>
                 </table>
               </div>
@@ -589,26 +824,38 @@
           <div id="eda-sec-multivariate" class="eda-section-view">
             <div class="grid-2col" style="margin-bottom:20px;">
               <div class="glass-card">
-                <div class="card-header"><div class="card-title">🔗 Correlation Heatmap (Plotly)</div></div>
+                <div class="card-header">
+                  <div class="card-title">🔗 Correlation Heatmap (Plotly)</div>
+                </div>
                 <div id="eda-heatmap-plot" style="min-height:360px; width:100%;"></div>
               </div>
               <div class="glass-card">
-                <div class="card-header"><div class="card-title">🌀 PCA 2D Dimensional Projection</div></div>
+                <div class="card-header">
+                  <div class="card-title">🌀 PCA 2D Dimensional Projection</div>
+                </div>
                 <div id="eda-pca-plot" style="min-height:360px; width:100%;"></div>
               </div>
             </div>
 
             <div class="grid-2col">
               <div class="glass-card">
-                <div class="card-header"><div class="card-title">⚠️ Multicollinearity (VIF Scores)</div></div>
+                <div class="card-header">
+                  <div class="card-title">⚠️ Multicollinearity (VIF Scores)</div>
+                </div>
                 <div id="eda-vif-plot" style="min-height:320px; width:100%;"></div>
               </div>
 
               <div class="glass-card">
-                <div class="card-header"><div class="card-title">📋 Full Feature Correlation Matrix</div></div>
+                <div class="card-header">
+                  <div class="card-title">📋 Full Feature Correlation Matrix</div>
+                </div>
                 <div class="table-wrapper">
                   <table class="data-table" id="eda-corr-table">
-                    <thead><tr><th>Feature Correlation Heatmap Matrix</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th>Feature Correlation Heatmap Matrix</th>
+                      </tr>
+                    </thead>
                     <tbody></tbody>
                   </table>
                 </div>
@@ -622,11 +869,13 @@
               <div class="card-header" style="flex-wrap:wrap; gap:12px;">
                 <div>
                   <div class="card-title">🎯 Multi-Method Outlier Audit</div>
-                  <div style="color:var(--text-muted); font-size:13px;">Compare IQR, Z-Score, Modified Z-Score (MAD), Isolation Forest, and LOF.</div>
+                  <div style="color:var(--text-muted); font-size:13px;">Compare IQR, Z-Score, Modified Z-Score (MAD),
+                    Isolation Forest, and LOF.</div>
                 </div>
                 <div style="display:flex; gap:10px; align-items:center;">
                   <label class="form-label" style="margin:0; font-size:12px;">Inspect Column:</label>
-                  <select id="eda-outlier-col-select" class="form-select" onchange="renderOutlierScatter()" style="min-width:150px; font-size:12px;"></select>
+                  <select id="eda-outlier-col-select" class="form-select" onchange="renderOutlierScatter()"
+                    style="min-width:150px; font-size:12px;"></select>
                 </div>
               </div>
 
@@ -635,26 +884,40 @@
 
               <div class="table-wrapper">
                 <table class="data-table" id="eda-outlier-methods-table">
-                  <thead><tr><th>Detection Algorithm</th><th>Outliers Detected</th><th>Density (%)</th><th>Affected Columns</th><th>Recommended Treatment</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Detection Algorithm</th>
+                      <th>Outliers Detected</th>
+                      <th>Density (%)</th>
+                      <th>Affected Columns</th>
+                      <th>Recommended Treatment</th>
+                    </tr>
+                  </thead>
                   <tbody></tbody>
                 </table>
               </div>
             </div>
 
             <div class="glass-card">
-              <div class="card-header"><div class="card-title">🛡️ Outlier Treatment Best Practices (Non-Destructive)</div></div>
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; font-size:13px; color:var(--text-muted);">
+              <div class="card-header">
+                <div class="card-title">🛡️ Outlier Treatment Best Practices (Non-Destructive)</div>
+              </div>
+              <div
+                style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; font-size:13px; color:var(--text-muted);">
                 <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:var(--radius-sm);">
                   <strong style="color:#38bdf8;">1. Winsorization (Capping)</strong>
-                  <p style="margin-top:6px;">Caps values exceeding 1st / 99th percentiles to boundary values, preserving sample count while eliminating gradient shock.</p>
+                  <p style="margin-top:6px;">Caps values exceeding 1st / 99th percentiles to boundary values, preserving
+                    sample count while eliminating gradient shock.</p>
                 </div>
                 <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:var(--radius-sm);">
                   <strong style="color:#818cf8;">2. Robust Scaling</strong>
-                  <p style="margin-top:6px;">Uses median and IQR instead of mean and standard deviation, preventing outliers from compressing valid feature ranges.</p>
+                  <p style="margin-top:6px;">Uses median and IQR instead of mean and standard deviation, preventing
+                    outliers from compressing valid feature ranges.</p>
                 </div>
                 <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:var(--radius-sm);">
                   <strong style="color:#34d399;">3. Power Transformations</strong>
-                  <p style="margin-top:6px;">Log1p or Yeo-Johnson transforms heavily skewed tails into standard normal bell curves for linear model convergence.</p>
+                  <p style="margin-top:6px;">Log1p or Yeo-Johnson transforms heavily skewed tails into standard normal
+                    bell curves for linear model convergence.</p>
                 </div>
               </div>
             </div>
@@ -667,7 +930,8 @@
                 <div class="card-title">🎯 Target Variable Diagnostics</div>
                 <div style="display:flex; gap:10px; align-items:center;">
                   <label class="form-label" style="margin:0; font-size:12px;">Task Override:</label>
-                  <select id="eda-target-task-override" class="form-select" onchange="runEnhancedEDA()" style="min-width:140px; font-size:12px;">
+                  <select id="eda-target-task-override" class="form-select" onchange="runEnhancedEDA()"
+                    style="min-width:140px; font-size:12px;">
                     <option value="">Auto-Detect</option>
                     <option value="classification">Classification</option>
                     <option value="regression">Regression</option>
@@ -679,10 +943,18 @@
             </div>
 
             <div class="glass-card">
-              <div class="card-header"><div class="card-title">📈 Feature-Target Predictive Associations</div></div>
+              <div class="card-header">
+                <div class="card-title">📈 Feature-Target Predictive Associations</div>
+              </div>
               <div class="table-wrapper">
                 <table class="data-table" id="eda-target-corrs-table">
-                  <thead><tr><th>Feature</th><th>Association Score / Correlation</th><th>Predictive Signal Strength</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Feature</th>
+                      <th>Association Score / Correlation</th>
+                      <th>Predictive Signal Strength</th>
+                    </tr>
+                  </thead>
                   <tbody></tbody>
                 </table>
               </div>
@@ -692,10 +964,20 @@
           <!-- ── Section 9: Feature Analysis ── -->
           <div id="eda-sec-features" class="eda-section-view">
             <div class="glass-card" style="margin-bottom:20px;">
-              <div class="card-header"><div class="card-title">⚡ Feature Redundancy & Correlation Screening</div></div>
+              <div class="card-header">
+                <div class="card-title">⚡ Feature Redundancy & Correlation Screening</div>
+              </div>
               <div class="table-wrapper">
                 <table class="data-table" id="eda-high-corr-features-table">
-                  <thead><tr><th>Feature 1</th><th>Feature 2</th><th>Correlation</th><th>Severity</th><th>Advice</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Feature 1</th>
+                      <th>Feature 2</th>
+                      <th>Correlation</th>
+                      <th>Severity</th>
+                      <th>Advice</th>
+                    </tr>
+                  </thead>
                   <tbody></tbody>
                 </table>
               </div>
@@ -703,14 +985,18 @@
 
             <div class="grid-2col">
               <div class="glass-card">
-                <div class="card-header"><div class="card-title">⚠️ Low Variance & Leakage Anomalies</div></div>
+                <div class="card-header">
+                  <div class="card-title">⚠️ Low Variance & Leakage Anomalies</div>
+                </div>
                 <div id="eda-feature-anomalies-list" style="display:flex; flex-direction:column; gap:10px;">
                   <span style="color:var(--text-muted); font-size:13px;">No variance anomalies detected.</span>
                 </div>
               </div>
 
               <div class="glass-card">
-                <div class="card-header"><div class="card-title">🎯 Prioritized Feature Selection Advice</div></div>
+                <div class="card-header">
+                  <div class="card-title">🎯 Prioritized Feature Selection Advice</div>
+                </div>
                 <div id="eda-feature-recommendations-list" style="display:flex; flex-direction:column; gap:10px;">
                   <span style="color:var(--text-muted); font-size:13px;">Run EDA to generate feature advice.</span>
                 </div>
@@ -724,7 +1010,8 @@
               <div class="card-header" style="flex-wrap:wrap; gap:12px;">
                 <div>
                   <div class="card-title">💡 Intelligent Automated EDA Insights Engine</div>
-                  <div style="color:var(--text-muted); font-size:13px;">100% data-driven explanations backed by actual statistical evidence and domain best practices.</div>
+                  <div style="color:var(--text-muted); font-size:13px;">100% data-driven explanations backed by actual
+                    statistical evidence and domain best practices.</div>
                 </div>
                 <div style="display:flex; gap:8px;">
                   <button class="btn btn-secondary btn-sm" onclick="filterEDAInsights('all')">All</button>
@@ -734,7 +1021,8 @@
                 </div>
               </div>
               <div id="eda-insights-container" style="display:flex; flex-direction:column; gap:14px; margin-top:10px;">
-                <span style="color:var(--text-muted); font-size:13px;">Click "Run Complete EDA" to generate deep intelligent insights.</span>
+                <span style="color:var(--text-muted); font-size:13px;">Click "Run Complete EDA" to generate deep
+                  intelligent insights.</span>
               </div>
             </div>
           </div>
@@ -742,37 +1030,55 @@
           <!-- ── Section 11: Export Reports ── -->
           <div id="eda-sec-reports" class="eda-section-view">
             <div class="glass-card" style="margin-bottom:20px;">
-              <div class="card-header"><div class="card-title">📄 Export Complete Automated EDA Audit Reports</div></div>
+              <div class="card-header">
+                <div class="card-title">📄 Export Complete Automated EDA Audit Reports</div>
+              </div>
               <p style="color:var(--text-muted); font-size:13px; line-height:1.6; margin-bottom:20px;">
-                Generate publication-ready diagnostic reports containing executive summaries, quality logs, descriptive distributions, correlation rankings, outlier analyses, and AI recommendations.
+                Generate publication-ready diagnostic reports containing executive summaries, quality logs, descriptive
+                distributions, correlation rankings, outlier analyses, and AI recommendations.
               </p>
               <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
-                <div style="background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:18px; text-align:center;">
+                <div
+                  style="background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:18px; text-align:center;">
                   <div style="font-size:32px; margin-bottom:10px;">🌐</div>
-                  <strong style="color:var(--text-bright); font-size:15px; display:block; margin-bottom:6px;">HTML Dashboard</strong>
-                  <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Standalone, responsive HTML report with embedded styles and tables.</p>
-                  <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('html')">📥 Download HTML</button>
+                  <strong style="color:var(--text-bright); font-size:15px; display:block; margin-bottom:6px;">HTML
+                    Dashboard</strong>
+                  <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Standalone, responsive HTML
+                    report with embedded styles and tables.</p>
+                  <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('html')">📥
+                    Download HTML</button>
                 </div>
 
-                <div style="background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:18px; text-align:center;">
+                <div
+                  style="background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:18px; text-align:center;">
                   <div style="font-size:32px; margin-bottom:10px;">📑</div>
-                  <strong style="color:var(--text-bright); font-size:15px; display:block; margin-bottom:6px;">PDF Document</strong>
-                  <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Professional multi-page publication document created via ReportLab.</p>
-                  <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('pdf')">📥 Download PDF</button>
+                  <strong style="color:var(--text-bright); font-size:15px; display:block; margin-bottom:6px;">PDF
+                    Document</strong>
+                  <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Professional multi-page
+                    publication document created via ReportLab.</p>
+                  <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('pdf')">📥
+                    Download PDF</button>
                 </div>
 
-                <div style="background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:18px; text-align:center;">
+                <div
+                  style="background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:18px; text-align:center;">
                   <div style="font-size:32px; margin-bottom:10px;">📊</div>
-                  <strong style="color:var(--text-bright); font-size:15px; display:block; margin-bottom:6px;">Excel Workbook (.xlsx)</strong>
-                  <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Formatted multi-tab spreadsheet with overview, stats, quality, and insights.</p>
-                  <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('excel')">📥 Download Excel</button>
+                  <strong style="color:var(--text-bright); font-size:15px; display:block; margin-bottom:6px;">Excel
+                    Workbook (.xlsx)</strong>
+                  <p style="color:var(--text-muted); font-size:12px; margin-bottom:14px;">Formatted multi-tab
+                    spreadsheet with overview, stats, quality, and insights.</p>
+                  <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="downloadEDAReport('excel')">📥
+                    Download Excel</button>
                 </div>
               </div>
             </div>
 
             <div class="glass-card">
-              <div class="card-header"><div class="card-title">📋 Included Diagnostic Sections in Report</div></div>
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; font-size:13px; color:var(--text-muted);">
+              <div class="card-header">
+                <div class="card-title">📋 Included Diagnostic Sections in Report</div>
+              </div>
+              <div
+                style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; font-size:13px; color:var(--text-muted);">
                 <div style="display:flex; align-items:center; gap:8px;">✅ Dataset Overview & Health Score</div>
                 <div style="display:flex; align-items:center; gap:8px;">✅ Data Quality Audit & Issues</div>
                 <div style="display:flex; align-items:center; gap:8px;">✅ Numerical Descriptive Statistics</div>
@@ -798,9 +1104,11 @@
                 <span class="badge badge-valid">Recommended</span>
               </div>
               <p class="card-subtitle">
-                Automatically imputes missing values, encodes categories, scales numeric features, and caps extreme outliers into a clean new version.
+                Automatically imputes missing values, encodes categories, scales numeric features, and caps extreme
+                outliers into a clean new version.
               </p>
-              <button class="btn btn-primary" onclick="runAutoPreprocess()">⚡ Auto-Clean &amp; Preprocess Dataset</button>
+              <button class="btn btn-primary" onclick="runAutoPreprocess()">⚡ Auto-Clean &amp; Preprocess
+                Dataset</button>
             </div>
 
             <div class="glass-card">
@@ -842,7 +1150,16 @@
             </div>
             <div class="table-wrapper">
               <table class="data-table" id="prep-history-table">
-                <thead><tr><th>Operation</th><th>Category</th><th>Affected Columns</th><th>Rows Before</th><th>Rows After</th><th>Timestamp</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Operation</th>
+                    <th>Category</th>
+                    <th>Affected Columns</th>
+                    <th>Rows Before</th>
+                    <th>Rows After</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -897,7 +1214,8 @@
                 </div>
               </div>
               <div id="ml-result-display">
-                <p style="color:var(--text-dim); font-size:13px;">No model trained yet in this session. Configure parameters and train a model.</p>
+                <p style="color:var(--text-dim); font-size:13px;">No model trained yet in this session. Configure
+                  parameters and train a model.</p>
               </div>
             </div>
           </div>
@@ -914,10 +1232,10 @@
                   onclick="showVizTab('confusion')" id="viz-tab-confusion">🗳️ Confusion Matrix</button>
                 <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
                   onclick="showVizTab('radar')" id="viz-tab-radar">🕸️ Metric Radar</button>
-                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
-                  onclick="showVizTab('cv')" id="viz-tab-cv">📈 CV Folds</button>
-                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
-                  onclick="showVizTab('bar')" id="viz-tab-bar">📏 Metrics Bar</button>
+                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;" onclick="showVizTab('cv')"
+                  id="viz-tab-cv">📈 CV Folds</button>
+                <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;" onclick="showVizTab('bar')"
+                  id="viz-tab-bar">📏 Metrics Bar</button>
                 <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
                   onclick="showVizTab('feature')" id="viz-tab-feature">🌳 Feature Importance</button>
                 <button class="btn btn-secondary" style="padding:5px 11px; font-size:11px;"
@@ -931,18 +1249,19 @@
             <!-- Normalize toggle (only relevant for confusion matrix) -->
             <div id="viz-cm-options" style="padding:0 0 10px; display:flex; gap:10px; align-items:center;">
               <label style="font-size:11px; color:var(--text-muted);">View:</label>
-              <button class="btn btn-secondary" style="padding:3px 10px; font-size:11px;"
-                onclick="toggleCMNormalize()" id="viz-cm-normalize-btn">Show %</button>
+              <button class="btn btn-secondary" style="padding:3px 10px; font-size:11px;" onclick="toggleCMNormalize()"
+                id="viz-cm-normalize-btn">Show %</button>
             </div>
             <!-- Chart containers — only one shown at a time -->
             <div id="viz-container-confusion" style="width:100%; min-height:380px;"></div>
-            <div id="viz-container-radar"     style="width:100%; min-height:380px; display:none;"></div>
-            <div id="viz-container-cv"        style="width:100%; min-height:300px; display:none;"></div>
-            <div id="viz-container-bar"       style="width:100%; min-height:320px; display:none;"></div>
-            <div id="viz-container-feature"   style="width:100%; min-height:360px; display:none;"></div>
-            <div id="viz-container-perclass"  style="width:100%; min-height:320px; display:none;"></div>
-            <div id="viz-container-gauge"     style="width:100%; min-height:260px; display:none; display:flex; flex-wrap:wrap; gap:0;"></div>
-            <div id="viz-container-history"   style="width:100%; min-height:300px; display:none;"></div>
+            <div id="viz-container-radar" style="width:100%; min-height:380px; display:none;"></div>
+            <div id="viz-container-cv" style="width:100%; min-height:300px; display:none;"></div>
+            <div id="viz-container-bar" style="width:100%; min-height:320px; display:none;"></div>
+            <div id="viz-container-feature" style="width:100%; min-height:360px; display:none;"></div>
+            <div id="viz-container-perclass" style="width:100%; min-height:320px; display:none;"></div>
+            <div id="viz-container-gauge"
+              style="width:100%; min-height:260px; display:none; display:flex; flex-wrap:wrap; gap:0;"></div>
+            <div id="viz-container-history" style="width:100%; min-height:300px; display:none;"></div>
           </div>
 
           <div class="glass-card" id="compare-panel" style="display:none;">
@@ -952,10 +1271,10 @@
               </div>
               <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                  <label style="font-size:12px; color:var(--text-muted); white-space:nowrap;">Sort &amp; Rank by:</label>
+                  <label style="font-size:12px; color:var(--text-muted); white-space:nowrap;">Sort &amp; Rank
+                    by:</label>
                   <select id="compare-metric-select" class="form-select"
-                    style="min-width:180px; padding:6px 10px; font-size:12px;"
-                    onchange="reRenderComparison()">
+                    style="min-width:180px; padding:6px 10px; font-size:12px;" onchange="reRenderComparison()">
                     <!-- populated dynamically -->
                   </select>
                 </div>
@@ -973,8 +1292,8 @@
                 onclick="showCompareTab('heatmap')" id="ctab-heatmap">🗺️ Heatmap</button>
               <button class="btn btn-secondary" style="padding:4px 11px; font-size:11px;"
                 onclick="showCompareTab('scatter')" id="ctab-scatter">&#x26A1; Speed vs Accuracy</button>
-              <button class="btn btn-secondary" style="padding:4px 11px; font-size:11px;"
-                onclick="showCompareTab('cv')" id="ctab-cv">📦 CV Stability</button>
+              <button class="btn btn-secondary" style="padding:4px 11px; font-size:11px;" onclick="showCompareTab('cv')"
+                id="ctab-cv">📦 CV Stability</button>
               <button class="btn btn-secondary" style="padding:4px 11px; font-size:11px;"
                 onclick="showCompareTab('radar')" id="ctab-radar">🕸️ Radar Overlay</button>
             </div>
@@ -985,10 +1304,11 @@
             <!-- Multi-metric grouped bar -->
             <div id="compare-grouped-wrap" style="display:none;">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                <label style="font-size:11px; color:var(--text-muted); white-space:nowrap;">Metrics (Ctrl+click for multi):</label>
+                <label style="font-size:11px; color:var(--text-muted); white-space:nowrap;">Metrics (Ctrl+click for
+                  multi):</label>
                 <select id="compare-grouped-metrics" class="form-select"
-                  style="min-width:260px; padding:5px 10px; font-size:11px;"
-                  onchange="renderGroupedBarChart()" multiple size="5">
+                  style="min-width:260px; padding:5px 10px; font-size:11px;" onchange="renderGroupedBarChart()" multiple
+                  size="5">
                 </select>
               </div>
               <div id="compare-grouped-chart" style="width:100%; height:360px;"></div>
@@ -1004,8 +1324,7 @@
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
                 <label style="font-size:11px; color:var(--text-muted);">Y-axis metric:</label>
                 <select id="compare-scatter-metric" class="form-select"
-                  style="min-width:180px; padding:5px 10px; font-size:11px;"
-                  onchange="renderScatterChart()">
+                  style="min-width:180px; padding:5px 10px; font-size:11px;" onchange="renderScatterChart()">
                 </select>
               </div>
               <div id="compare-scatter-chart" style="width:100%; height:380px;"></div>
@@ -1022,10 +1341,15 @@
             </div>
 
             <!-- Full metrics table -->
-            <div class="table-wrapper" style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.06); padding-top:16px;">
-              <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.06em;">Full Metrics Table</div>
+            <div class="table-wrapper"
+              style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.06); padding-top:16px;">
+              <div
+                style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.06em;">
+                Full Metrics Table</div>
               <table class="data-table" id="compare-full-table">
-                <thead><tr id="compare-full-thead"></tr></thead>
+                <thead>
+                  <tr id="compare-full-thead"></tr>
+                </thead>
                 <tbody id="compare-full-tbody"></tbody>
               </table>
             </div>
@@ -1035,16 +1359,28 @@
           <div class="glass-card" id="overall-ranking-panel" style="display:none; margin-top:0;">
             <div class="card-header">
               <div class="card-title">
-                <span class="card-title-icon">🥇</span> Overall Rankings &nbsp;<span style="font-size:12px; font-weight:400; color:var(--text-muted);">(composite score — average rank across all metrics)</span>
+                <span class="card-title-icon">🥇</span> Overall Rankings &nbsp;<span
+                  style="font-size:12px; font-weight:400; color:var(--text-muted);">(composite score — average rank
+                  across all metrics)</span>
               </div>
             </div>
             <div class="table-wrapper">
               <table class="data-table" id="ml-leaderboard-table">
-                <thead><tr>
-                  <th>Rank</th><th>Algorithm</th><th>Composite Score</th>
-                  <th>Accuracy</th><th>F1</th><th>Precision</th><th>Recall</th>
-                  <th>MCC</th><th>ROC-AUC</th><th>Bal. Accuracy</th><th>Train Time</th>
-                </tr></thead>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Algorithm</th>
+                    <th>Composite Score</th>
+                    <th>Accuracy</th>
+                    <th>F1</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>MCC</th>
+                    <th>ROC-AUC</th>
+                    <th>Bal. Accuracy</th>
+                    <th>Train Time</th>
+                  </tr>
+                </thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -1068,7 +1404,8 @@
                 </select>
               </div>
               <form id="prediction-input-form" onsubmit="event.preventDefault(); runPrediction();">
-                <div id="prediction-fields-container" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                <div id="prediction-fields-container"
+                  style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
                   <!-- Dynamically rendered input fields -->
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%;">⚡ Run Live Inference</button>
@@ -1084,7 +1421,8 @@
               <div id="prediction-result-box" style="text-align:center; padding:36px 16px;">
                 <div style="font-size:44px; margin-bottom:12px;">📊</div>
                 <h3 style="color:var(--text-muted); margin-bottom:8px; font-weight:600;">Ready for Inference</h3>
-                <p style="color:var(--text-dim); font-size:13px;">Provide feature inputs on the left and click "Run Live Inference" to generate instant predictions.</p>
+                <p style="color:var(--text-dim); font-size:13px;">Provide feature inputs on the left and click "Run Live
+                  Inference" to generate instant predictions.</p>
               </div>
             </div>
           </div>
@@ -1099,7 +1437,8 @@
               </div>
               <span class="badge badge-valid">Audit Ready</span>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:16px;">
+            <div
+              style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:16px;">
               <div class="form-group">
                 <label class="form-label">Report Type</label>
                 <select id="rep-type" class="form-select">
@@ -1129,7 +1468,16 @@
             </div>
             <div class="table-wrapper">
               <table class="data-table" id="reports-catalog-table">
-                <thead><tr><th>Report ID</th><th>Type</th><th>Format</th><th>File Size</th><th>Created At</th><th>Action</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Report ID</th>
+                    <th>Type</th>
+                    <th>Format</th>
+                    <th>File Size</th>
+                    <th>Created At</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -1144,19 +1492,22 @@
               <div>
                 <div class="card-title">🛡️ Evidence-Driven Pipeline Auditor</div>
                 <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">
-                  Automated detection of Target Leakage, Preprocessing Leakage, Split Contamination, and Metric Distortion.
+                  Automated detection of Target Leakage, Preprocessing Leakage, Split Contamination, and Metric
+                  Distortion.
                 </div>
               </div>
               <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:6px;">
                   <label class="form-label" style="margin:0; font-size:12px;">Model:</label>
-                  <select id="auditor-model-select" class="form-select" style="min-width:130px; padding:6px 10px; font-size:12px;">
+                  <select id="auditor-model-select" class="form-select"
+                    style="min-width:130px; padding:6px 10px; font-size:12px;">
                     <option value="random_forest">Random Forest</option>
                     <option value="logistic_regression">Logistic Regression</option>
                     <option value="decision_tree">Decision Tree</option>
                   </select>
                 </div>
-                <button class="btn btn-primary" id="btn-run-audit" onclick="runPipelineAudit()">▶ Run Deep Pipeline Audit</button>
+                <button class="btn btn-primary" id="btn-run-audit" onclick="runPipelineAudit()">▶ Run Deep Pipeline
+                  Audit</button>
                 <button class="btn btn-secondary" onclick="exportAuditFindingsCSV()">📥 Export Findings CSV</button>
               </div>
             </div>
@@ -1169,7 +1520,8 @@
               <div>
                 <div class="kpi-label">Pipeline Integrity</div>
                 <div class="kpi-val" id="auditor-integrity-val">-- / 100</div>
-                <span class="badge badge-valid" id="auditor-integrity-badge" style="font-size:11px; margin-top:4px;">Pending Audit</span>
+                <span class="badge badge-valid" id="auditor-integrity-badge"
+                  style="font-size:11px; margin-top:4px;">Pending Audit</span>
               </div>
             </div>
             <div class="kpi-card">
@@ -1177,7 +1529,8 @@
               <div>
                 <div class="kpi-label">Confirmed Leakages</div>
                 <div class="kpi-val" id="auditor-confirmed-val">0</div>
-                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="auditor-critical-val">0 critical defects</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="auditor-critical-val">0
+                  critical defects</div>
               </div>
             </div>
             <div class="kpi-card">
@@ -1185,7 +1538,8 @@
               <div>
                 <div class="kpi-label">Suspected Flaws</div>
                 <div class="kpi-val" id="auditor-suspected-val">0</div>
-                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="auditor-warning-val">0 warnings</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="auditor-warning-val">0
+                  warnings</div>
               </div>
             </div>
             <div class="kpi-card">
@@ -1193,7 +1547,8 @@
               <div>
                 <div class="kpi-label">Baseline Metric</div>
                 <div class="kpi-val" id="auditor-metric-val">--</div>
-                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="auditor-metric-label">Model Score</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="auditor-metric-label">Model
+                  Score</div>
               </div>
             </div>
           </div>
@@ -1206,13 +1561,18 @@
                 <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('all')">All</button>
                 <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('critical')">Critical</button>
                 <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('high')">High</button>
-                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('target_leakage')">Target Leakage</button>
-                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('preprocessing_leakage')">Prep Leakage</button>
-                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('split_integrity')">Split Integrity</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('target_leakage')">Target
+                  Leakage</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('preprocessing_leakage')">Prep
+                  Leakage</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterAuditFindings('split_integrity')">Split
+                  Integrity</button>
               </div>
             </div>
-            <div id="auditor-findings-container" style="display:flex; flex-direction:column; gap:14px; margin-top:10px;">
-              <span style="color:var(--text-muted); font-size:13px;">Select a dataset and click "Run Deep Pipeline Audit" to detect potential evaluation leakage and pipeline bugs.</span>
+            <div id="auditor-findings-container"
+              style="display:flex; flex-direction:column; gap:14px; margin-top:10px;">
+              <span style="color:var(--text-muted); font-size:13px;">Select a dataset and click "Run Deep Pipeline
+                Audit" to detect potential evaluation leakage and pipeline bugs.</span>
             </div>
           </div>
         </section>
@@ -1224,10 +1584,12 @@
               <div>
                 <div class="card-title">⚡ Automated Pipeline Correction &amp; Repair Engine</div>
                 <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">
-                  Applies evidence-grounded repairs: feature isolation, fold-contained transformers, and honest evaluation splits.
+                  Applies evidence-grounded repairs: feature isolation, fold-contained transformers, and honest
+                  evaluation splits.
                 </div>
               </div>
-              <button class="btn btn-primary" id="btn-run-repair" onclick="runPipelineRepair()">⚡ Apply 1-Click Pipeline Repair</button>
+              <button class="btn btn-primary" id="btn-run-repair" onclick="runPipelineRepair()">⚡ Apply 1-Click Pipeline
+                Repair</button>
             </div>
             <div id="repair-status-banner" style="margin-top:10px; font-size:13px; color:var(--text-muted);">
               Run audit first, or click "Apply 1-Click Pipeline Repair" to auto-audit and fix detected evaluation flaws.
@@ -1264,7 +1626,8 @@
               <span class="badge badge-info" id="repair-actions-count">0 Actions</span>
             </div>
             <div id="repair-actions-list" style="display:flex; flex-direction:column; gap:10px;">
-              <span style="color:var(--text-muted); font-size:13px;">Click "Apply 1-Click Pipeline Repair" to generate and execute correction actions.</span>
+              <span style="color:var(--text-muted); font-size:13px;">Click "Apply 1-Click Pipeline Repair" to generate
+                and execute correction actions.</span>
             </div>
           </div>
         </section>
@@ -1280,11 +1643,13 @@
                 </div>
               </div>
               <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <select id="benchmark-model-select" class="form-select" style="min-width:130px; padding:6px 10px; font-size:12px;">
+                <select id="benchmark-model-select" class="form-select"
+                  style="min-width:130px; padding:6px 10px; font-size:12px;">
                   <option value="random_forest">Random Forest</option>
                   <option value="logistic_regression">Logistic Regression</option>
                 </select>
-                <button class="btn btn-primary" id="btn-run-benchmark" onclick="runBenchmarkLab()">▶ Run Synthetic Benchmark</button>
+                <button class="btn btn-primary" id="btn-run-benchmark" onclick="runBenchmarkLab()">▶ Run Synthetic
+                  Benchmark</button>
               </div>
             </div>
           </div>
@@ -1296,7 +1661,8 @@
               <div>
                 <div class="kpi-label">Overall Precision</div>
                 <div class="kpi-val" id="bm-precision-val">--%</div>
-                <span class="badge badge-valid" id="bm-precision-badge" style="font-size:11px; margin-top:4px;">Target: &gt;90%</span>
+                <span class="badge badge-valid" id="bm-precision-badge" style="font-size:11px; margin-top:4px;">Target:
+                  &gt;90%</span>
               </div>
             </div>
             <div class="kpi-card">
@@ -1304,7 +1670,8 @@
               <div>
                 <div class="kpi-label">Overall Recall</div>
                 <div class="kpi-val" id="bm-recall-val">--%</div>
-                <span class="badge badge-info" id="bm-recall-badge" style="font-size:11px; margin-top:4px;">Target: &gt;85%</span>
+                <span class="badge badge-info" id="bm-recall-badge" style="font-size:11px; margin-top:4px;">Target:
+                  &gt;85%</span>
               </div>
             </div>
             <div class="kpi-card">
@@ -1312,7 +1679,8 @@
               <div>
                 <div class="kpi-label">Overall F1 Score</div>
                 <div class="kpi-val" id="bm-f1-val">--%</div>
-                <span class="badge badge-valid" id="bm-f1-badge" style="font-size:11px; margin-top:4px;">Balanced Accuracy</span>
+                <span class="badge badge-valid" id="bm-f1-badge" style="font-size:11px; margin-top:4px;">Balanced
+                  Accuracy</span>
               </div>
             </div>
             <div class="kpi-card">
@@ -1320,7 +1688,8 @@
               <div>
                 <div class="kpi-label">Scenarios Evaluated</div>
                 <div class="kpi-val" id="bm-scenarios-val">0 / 0</div>
-                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="bm-time-val">0.00s execution</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;" id="bm-time-val">0.00s execution
+                </div>
               </div>
             </div>
           </div>
@@ -1344,7 +1713,10 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Click "Run Synthetic Benchmark" to evaluate auditor detection against controlled corruption scenarios.</td></tr>
+                  <tr>
+                    <td colspan="7" style="text-align:center; color:var(--text-muted);">Click "Run Synthetic Benchmark"
+                      to evaluate auditor detection against controlled corruption scenarios.</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -1360,4 +1732,5 @@
   </footer>
   <script src="/static/app.js"></script>
 </body>
+
 </html>
