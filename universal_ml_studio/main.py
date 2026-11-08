@@ -92,11 +92,11 @@ def dashboard():
 
 @app.get("/", tags=["Landing"])
 def root(request: Request):
-    """Landing page — served to browsers; JSON for API clients."""
+    """Combined landing + dashboard SPA — served to browsers; JSON for API clients."""
     accept = request.headers.get("accept", "")
-    landing_file = STATIC_DIR / "landing.html"
-    if "text/html" in accept and landing_file.exists():
-        return FileResponse(landing_file)
+    index_file = STATIC_DIR / "index.html"
+    if "text/html" in accept and index_file.exists():
+        return FileResponse(index_file)
     return {
         "platform": "Universal AI/ML Studio",
         "version": "1.0.0",

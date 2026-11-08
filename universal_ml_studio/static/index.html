@@ -148,6 +148,13 @@
           </div>
         </div>
         <div class="top-right">
+          <button class="btn-home" onclick="showLanding()" title="Back to Home" aria-label="Home">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            Home
+          </button>
           <select id="dataset-selector" class="form-select" style="width: 240px;"
             onchange="handleDatasetSelect(this.value)">
             <option value="">-- Choose Dataset --</option>
@@ -1731,6 +1738,634 @@
     <p>Crafted with <span class="app-footer-heart">♥</span> by Keerthi &amp; Jayakrushna</p>
   </footer>
   <script src="/static/app.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       LANDING PAGE OVERLAY — full-screen, sits above dashboard
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="landing-overlay" aria-modal="true" role="dialog">
+
+    <style>
+      /* ── Landing overlay shell ── */
+      #landing-overlay {
+        position: fixed; inset: 0; z-index: 1000;
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        overflow: hidden;
+        transition: opacity 0.55s cubic-bezier(0.4,0,0.2,1),
+                    transform 0.55s cubic-bezier(0.4,0,0.2,1);
+        will-change: opacity, transform;
+      }
+      #landing-overlay.lnd-hidden {
+        opacity: 0;
+        transform: translateY(-28px) scale(0.98);
+        pointer-events: none;
+      }
+
+      /* ── Token layer (scoped inside overlay) ── */
+      #landing-overlay {
+        --l-ease  : cubic-bezier(0.4, 0, 0.2, 1);
+        --l-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        --l-t     : 0.26s;
+      }
+      /* dark defaults */
+      #landing-overlay {
+        --l-bg-grad : radial-gradient(ellipse 120% 80% at 20% 10%, rgba(99,102,241,0.22) 0%, transparent 55%),
+                      radial-gradient(ellipse 100% 70% at 80% 90%, rgba(6,182,212,0.15) 0%, transparent 50%),
+                      radial-gradient(ellipse 80% 60% at 70% 20%, rgba(168,85,247,0.13) 0%, transparent 45%),
+                      #060810;
+        --l-glass   : rgba(13,17,30,0.65);
+        --l-glass-b : rgba(255,255,255,0.08);
+        --l-glass-d : rgba(10,13,24,0.45);
+        --l-txt     : #c8d0e8;
+        --l-bright  : #ffffff;
+        --l-muted   : #4a5570;
+        --l-accent  : #6366f1;
+        --l-accent-h: #4f46e5;
+        --l-accent-g: rgba(99,102,241,0.35);
+        --l-cyan    : #06b6d4;
+        --l-shadow  : 0 32px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06);
+        --l-cta-glow: 0 8px 40px rgba(99,102,241,0.50);
+        --l-bar-bg  : rgba(6,8,16,0.82);
+        --l-bar-b   : rgba(255,255,255,0.065);
+        --l-foot-txt: #232b42;
+        --l-chip-bg : rgba(99,102,241,0.10);
+        --l-chip-b  : rgba(99,102,241,0.25);
+        --l-badge-bg: rgba(16,185,129,0.09);
+        --l-badge-b : rgba(16,185,129,0.25);
+        --l-badge-tx: #34d399;
+        --l-tog-bg  : rgba(99,102,241,0.12);
+        --l-tog-b   : rgba(99,102,241,0.30);
+        --l-vignette: radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.75) 100%);
+        --l-grid    : rgba(255,255,255,0.040);
+        --l-aur-a   : rgba(99,102,241,0.18);
+        --l-aur-b   : rgba(6,182,212,0.12);
+        --l-aur-c   : rgba(168,85,247,0.10);
+        --l-cursor  : rgba(99,102,241,0.25);
+        --l-grain   : 0.055;
+      }
+      /* light theme overrides */
+      [data-theme="light"] #landing-overlay {
+        --l-bg-grad : radial-gradient(ellipse 130% 80% at 15% 5%,  rgba(99,102,241,0.28) 0%, transparent 50%),
+                      radial-gradient(ellipse 110% 70% at 85% 95%, rgba(6,182,212,0.22)  0%, transparent 48%),
+                      radial-gradient(ellipse 90%  65% at 72% 18%, rgba(168,85,247,0.20) 0%, transparent 45%),
+                      radial-gradient(ellipse 70%  50% at 10% 80%, rgba(16,185,129,0.14) 0%, transparent 40%),
+                      #eef1fa;
+        --l-glass   : rgba(255,255,255,0.78);
+        --l-glass-b : rgba(79,70,229,0.10);
+        --l-glass-d : rgba(220,228,248,0.55);
+        --l-txt     : #1e293b;
+        --l-bright  : #0f172a;
+        --l-muted   : #64748b;
+        --l-accent  : #4f46e5;
+        --l-accent-h: #4338ca;
+        --l-accent-g: rgba(79,70,229,0.28);
+        --l-cyan    : #0284c7;
+        --l-shadow  : 0 16px 48px rgba(15,23,42,0.14), 0 0 0 1px rgba(79,70,229,0.08);
+        --l-cta-glow: 0 6px 30px rgba(79,70,229,0.36);
+        --l-bar-bg  : rgba(255,255,255,0.84);
+        --l-bar-b   : rgba(0,0,0,0.08);
+        --l-foot-txt: #94a3b8;
+        --l-chip-bg : rgba(79,70,229,0.08);
+        --l-chip-b  : rgba(79,70,229,0.20);
+        --l-badge-bg: rgba(5,150,105,0.08);
+        --l-badge-b : rgba(5,150,105,0.22);
+        --l-badge-tx: #059669;
+        --l-tog-bg  : rgba(79,70,229,0.09);
+        --l-tog-b   : rgba(79,70,229,0.30);
+        --l-vignette: radial-gradient(ellipse at center, transparent 20%, rgba(79,70,229,0.08) 100%);
+        --l-grid    : rgba(79,70,229,0.07);
+        --l-aur-a   : rgba(99,102,241,0.30);
+        --l-aur-b   : rgba(6,182,212,0.22);
+        --l-aur-c   : rgba(168,85,247,0.20);
+        --l-cursor  : rgba(79,70,229,0.20);
+        --l-grain   : 0.030;
+      }
+
+      /* ── Background ── */
+      #lnd-bg {
+        position: absolute; inset: 0;
+        background: var(--l-bg-grad);
+      }
+      /* grain */
+      #lnd-bg::before {
+        content: '';
+        position: absolute; inset: 0; pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+        opacity: var(--l-grain);
+      }
+
+      /* ── Aurora ── */
+      #lnd-aurora { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+      .lnd-ab { position: absolute; border-radius: 50%; filter: blur(60px); will-change: transform; }
+      .lnd-ab-1 { width:110vw;height:420px;top:-160px;left:-20%;
+                  background:linear-gradient(140deg,var(--l-aur-a) 0%,var(--l-aur-b) 55%,transparent 100%);
+                  animation: la1 26s ease-in-out infinite alternate; }
+      .lnd-ab-2 { width:100vw;height:380px;bottom:-140px;right:-15%;
+                  background:linear-gradient(320deg,var(--l-aur-b) 0%,var(--l-aur-c) 55%,transparent 100%);
+                  animation: la2 32s ease-in-out 5s infinite alternate; }
+      .lnd-ab-3 { width:80vw;height:260px;top:32%;left:-10%;
+                  background:linear-gradient(90deg,transparent 0%,var(--l-aur-c) 50%,transparent 100%);
+                  animation: la3 20s ease-in-out 10s infinite alternate; }
+      .lnd-ab-4 { width:60vw;height:200px;top:5%;right:-5%;
+                  background:linear-gradient(220deg,var(--l-aur-a) 0%,transparent 70%);
+                  animation: la1 18s ease-in-out 3s infinite alternate-reverse; }
+      @keyframes la1 {
+        from{transform:translateX(0) rotate(-6deg) scaleY(1);opacity:.8}
+        to  {transform:translateX(8%) rotate(-2deg) scaleY(1.25);opacity:1}
+      }
+      @keyframes la2 {
+        from{transform:translateX(0) rotate(5deg) scaleY(1);opacity:.7}
+        to  {transform:translateX(-8%) rotate(9deg) scaleY(1.3);opacity:1}
+      }
+      @keyframes la3 {
+        from{transform:translateX(0) scaleX(1);opacity:.6}
+        to  {transform:translateX(18%) scaleX(1.2);opacity:.9}
+      }
+
+      /* ── Canvas ── */
+      #lnd-canvas { position:absolute;inset:0;pointer-events:none; }
+
+      /* ── Cursor glow ── */
+      #lnd-cursor-glow {
+        position:absolute;z-index:1;pointer-events:none;
+        width:380px;height:380px;border-radius:50%;
+        background:radial-gradient(circle,var(--l-cursor) 0%,transparent 70%);
+        transform:translate(-50%,-50%);will-change:left,top;
+      }
+
+      /* ── Vignette ── */
+      #lnd-vignette {
+        position:absolute;inset:0;z-index:1;pointer-events:none;
+        background:var(--l-vignette);
+      }
+
+      /* ── Dot grid ── */
+      #lnd-grid {
+        position:absolute;inset:0;pointer-events:none;
+        background-image:radial-gradient(circle,var(--l-grid) 1.2px,transparent 1.2px);
+        background-size:36px 36px;
+        animation:lnd-grid-drift 50s linear infinite;
+      }
+      @keyframes lnd-grid-drift{from{background-position:0 0}to{background-position:36px 36px}}
+
+      /* ── Topbar ── */
+      #lnd-topbar {
+        position:absolute;top:0;left:0;right:0;z-index:10;
+        height:58px;display:flex;align-items:center;justify-content:space-between;
+        padding:0 28px;
+        background:var(--l-bar-bg);border-bottom:1px solid var(--l-bar-b);
+        backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+        animation:lnd-bar-in 0.5s ease both;
+      }
+      @keyframes lnd-bar-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+      .lnd-brand{display:flex;align-items:center;gap:10px;}
+      .lnd-brand-mark{
+        width:30px;height:30px;border-radius:8px;flex-shrink:0;
+        background:linear-gradient(135deg,var(--l-accent) 0%,var(--l-cyan) 100%);
+        display:flex;align-items:center;justify-content:center;
+      }
+      .lnd-brand-mark svg{width:15px;height:15px;}
+      .lnd-brand-name{font-size:13.5px;font-weight:700;color:var(--l-bright);letter-spacing:-0.015em;}
+
+      /* ── Toggle ── */
+      .lnd-tog-row{display:flex;align-items:center;gap:8px;}
+      .lnd-tog-label{
+        font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;
+        color:var(--l-muted);text-transform:uppercase;letter-spacing:0.08em;user-select:none;
+      }
+      .lnd-tog-btn{background:none;border:none;padding:0;cursor:pointer;outline:none;width:42px;height:23px;position:relative;}
+      .lnd-tog-track{width:42px;height:23px;border-radius:999px;background:var(--l-tog-bg);border:1px solid var(--l-tog-b);}
+      .lnd-tog-thumb{
+        position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;
+        background:var(--l-accent);display:flex;align-items:center;justify-content:center;
+        transition:transform 0.24s ease;box-shadow:0 1px 4px rgba(0,0,0,0.3);
+      }
+      [data-theme="light"] .lnd-tog-thumb{transform:translateX(19px);}
+      .lnd-i-moon,.lnd-i-sun{position:absolute;width:8px;height:8px;transition:opacity 0.18s;}
+      .lnd-i-moon{opacity:1;}.lnd-i-sun{opacity:0;}
+      [data-theme="light"] .lnd-i-moon{opacity:0;}
+      [data-theme="light"] .lnd-i-sun{opacity:1;}
+
+      /* ── Page centre ── */
+      #lnd-page{
+        position:absolute;inset:0;z-index:2;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        padding:72px 24px 60px;
+      }
+
+      /* ── Card stack ── */
+      #lnd-card-wrap{position:relative;max-width:460px;width:100%;perspective:900px;}
+      .lnd-card-depth{
+        position:absolute;inset:0;
+        background:var(--l-glass-d);
+        backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+        border:1px solid var(--l-glass-b);border-radius:26px;
+        transform:rotate(-2deg) scale(1.03) translateY(10px);opacity:.55;
+        animation:lnd-rise 0.65s ease 0s both;
+      }
+      .lnd-card-depth-2{
+        position:absolute;inset:0;
+        background:var(--l-glass-d);
+        backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+        border:1px solid var(--l-glass-b);border-radius:28px;
+        transform:rotate(1.2deg) scale(1.055) translateY(16px);opacity:.28;
+        animation:lnd-rise 0.65s ease 0s both;
+      }
+      .lnd-card{
+        position:relative;z-index:1;
+        background:var(--l-glass);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);
+        border:1px solid var(--l-glass-b);border-radius:24px;box-shadow:var(--l-shadow);
+        padding:44px 42px 38px;width:100%;
+        display:flex;flex-direction:column;align-items:center;text-align:center;
+        animation:lnd-rise 0.65s ease 0.1s both;
+        transform-style:preserve-3d;will-change:transform;
+      }
+      @keyframes lnd-rise{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+
+      /* ── Glyph ── */
+      .lnd-glyph-wrap{position:relative;margin-bottom:24px;animation:lnd-glyph-in 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;}
+      @keyframes lnd-glyph-in{from{opacity:0;transform:scale(0.7) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+      .lnd-ring{position:absolute;border-radius:50%;border:1px solid rgba(99,102,241,0.22);animation:lnd-ring-pulse 3.5s ease-in-out infinite;}
+      .lnd-ring-1{inset:-10px;}
+      .lnd-ring-2{inset:-22px;border-color:rgba(99,102,241,0.11);animation-delay:.6s;}
+      .lnd-ring-3{inset:-36px;border-color:rgba(99,102,241,0.05);animation-delay:1.2s;}
+      @keyframes lnd-ring-pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+      .lnd-glyph{
+        width:60px;height:60px;border-radius:15px;
+        background:linear-gradient(140deg,var(--l-accent) 0%,var(--l-cyan) 100%);
+        display:flex;align-items:center;justify-content:center;
+        animation:lnd-glow 3.2s ease-in-out infinite;
+      }
+      @keyframes lnd-glow{0%,100%{box-shadow:0 0 24px var(--l-accent-g)}50%{box-shadow:0 0 60px var(--l-accent-g)}}
+      .lnd-glyph svg{width:28px;height:28px;}
+
+      /* ── Badge ── */
+      .lnd-badge{
+        display:inline-flex;align-items:center;gap:6px;
+        padding:4px 12px;border-radius:999px;
+        background:var(--l-badge-bg);border:1px solid var(--l-badge-b);
+        font-size:11px;font-weight:600;color:var(--l-badge-tx);
+        letter-spacing:.04em;text-transform:uppercase;margin-bottom:16px;
+        animation:lnd-fade-up 0.5s ease 0.55s both;
+      }
+      .lnd-dot{width:6px;height:6px;border-radius:50%;background:var(--l-badge-tx);animation:lnd-blink 2s ease-in-out infinite;}
+      @keyframes lnd-blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+      /* ── Title ── */
+      .lnd-title{
+        font-size:28px;font-weight:800;color:var(--l-bright);
+        letter-spacing:-0.03em;line-height:1.18;margin-bottom:10px;
+      }
+      .lnd-title .lnd-word{display:inline-block;overflow:hidden;padding-bottom:2px;}
+      .lnd-title .lnd-word span{display:inline-block;animation:lnd-word-reveal 0.55s ease both;}
+      .lnd-title .lnd-word:nth-child(1) span{animation-delay:.65s;}
+      .lnd-title .lnd-word:nth-child(2) span{animation-delay:.78s;}
+      .lnd-title .lnd-word:nth-child(3) span{animation-delay:.91s;}
+      @keyframes lnd-word-reveal{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+
+      /* ── Sub ── */
+      .lnd-sub{
+        font-size:13.5px;color:var(--l-muted);line-height:1.65;
+        margin-bottom:28px;animation:lnd-fade-up 0.55s ease 1.2s both;
+      }
+      @keyframes lnd-fade-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+      /* ── Chips ── */
+      .lnd-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:30px;}
+      .lnd-chip{
+        display:inline-flex;align-items:center;gap:7px;
+        padding:6px 13px;border-radius:999px;
+        background:var(--l-chip-bg);border:1px solid var(--l-chip-b);
+        font-size:12px;font-weight:600;color:var(--l-txt);
+        transition:transform .2s ease,box-shadow .2s ease;
+        animation:lnd-chip-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+      }
+      .lnd-chip:hover{transform:translateY(-2px);box-shadow:0 4px 14px var(--l-accent-g);}
+      .lnd-chip:nth-child(1){animation-delay:1.35s;}.lnd-chip:nth-child(2){animation-delay:1.48s;}.lnd-chip:nth-child(3){animation-delay:1.61s;}
+      @keyframes lnd-chip-pop{from{opacity:0;transform:scale(0.85) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+      .lnd-chip-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--l-accent);}
+
+      /* ── Divider ── */
+      .lnd-divider{width:100%;height:1px;background:var(--l-glass-b);margin-bottom:24px;animation:lnd-fade-up .4s ease 1.7s both;}
+
+      /* ── CTA ── */
+      .lnd-cta-wrap{width:100%;animation:lnd-cta-in 0.55s cubic-bezier(0.34,1.56,0.64,1) 1.78s both;}
+      @keyframes lnd-cta-in{from{opacity:0;transform:translateY(16px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+      .lnd-cta{
+        display:flex;align-items:center;justify-content:center;gap:10px;
+        width:100%;padding:15px 24px;border-radius:13px;
+        background:var(--l-accent);color:#fff;
+        font-size:14px;font-weight:700;letter-spacing:.01em;
+        border:none;cursor:pointer;text-decoration:none;font-family:inherit;
+        position:relative;overflow:hidden;box-shadow:var(--l-cta-glow);
+        transition:background .26s ease,box-shadow .26s ease,transform .16s ease;
+      }
+      .lnd-cta::before{
+        content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+        background:linear-gradient(90deg,transparent,rgba(255,255,255,0.14),transparent);
+        animation:lnd-shimmer 2.8s ease-in-out 2.5s infinite;
+      }
+      @keyframes lnd-shimmer{0%{left:-60%}60%{left:120%}100%{left:120%}}
+      .lnd-cta:hover{background:var(--l-accent-h);box-shadow:0 10px 50px var(--l-accent-g);transform:translateY(-2px);}
+      .lnd-cta:active{transform:translateY(0);}
+      .lnd-arrow{width:15px;height:15px;transition:transform .2s ease;flex-shrink:0;}
+      .lnd-cta:hover .lnd-arrow{transform:translateX(5px);}
+
+      /* ── Enter hint ── */
+      .lnd-enter-hint{
+        margin-top:12px;font-family:'JetBrains Mono',monospace;
+        font-size:10px;font-weight:500;color:var(--l-muted);letter-spacing:.08em;
+        display:flex;align-items:center;justify-content:center;gap:5px;
+        animation:lnd-fade-up .4s ease 2.2s both;
+      }
+      .lnd-enter-key{
+        display:inline-flex;align-items:center;justify-content:center;
+        padding:1px 5px;border-radius:4px;border:1px solid var(--l-chip-b);
+        font-size:9px;font-weight:600;animation:lnd-enter-blink 2.5s ease-in-out 3s infinite;
+      }
+      @keyframes lnd-enter-blink{0%,80%,100%{opacity:.5}40%{opacity:1}}
+
+      /* ── Footer ── */
+      #lnd-footer{
+        position:absolute;bottom:0;left:0;right:0;z-index:10;
+        text-align:center;padding:13px 24px;
+        background:var(--l-bar-bg);border-top:1px solid var(--l-bar-b);
+        backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+        animation:lnd-fade-up .5s ease 2s both;
+      }
+      #lnd-footer p{font-size:11px;font-weight:500;letter-spacing:.04em;color:var(--l-foot-txt);}
+      #lnd-footer .lnd-heart{color:#e11d48;}
+
+      /* ── Dashboard Home button ── */
+      .btn-home {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 7px 14px; border-radius: 8px;
+        background: transparent;
+        border: 1px solid var(--border-color, rgba(99,102,241,0.25));
+        color: var(--text-secondary, #94a3b8);
+        font-size: 12.5px; font-weight: 600; cursor: pointer;
+        font-family: inherit;
+        transition: background .2s ease, color .2s ease, border-color .2s ease, transform .15s ease;
+      }
+      .btn-home:hover {
+        background: rgba(99,102,241,0.10);
+        border-color: rgba(99,102,241,0.45);
+        color: #6366f1;
+        transform: translateY(-1px);
+      }
+      .btn-home svg { flex-shrink: 0; }
+    </style>
+
+    <!-- Layers -->
+    <div id="lnd-bg"></div>
+    <div id="lnd-aurora">
+      <div class="lnd-ab lnd-ab-1"></div>
+      <div class="lnd-ab lnd-ab-2"></div>
+      <div class="lnd-ab lnd-ab-3"></div>
+      <div class="lnd-ab lnd-ab-4"></div>
+    </div>
+    <canvas id="lnd-canvas" aria-hidden="true"></canvas>
+    <div id="lnd-cursor-glow" aria-hidden="true"></div>
+    <div id="lnd-vignette" aria-hidden="true"></div>
+    <div id="lnd-grid" aria-hidden="true"></div>
+
+    <!-- Topbar -->
+    <header id="lnd-topbar">
+      <div class="lnd-brand">
+        <div class="lnd-brand-mark">
+          <svg fill="none" viewBox="0 0 24 24">
+            <path d="M12 2L3 7V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V7L12 2Z"
+              fill="rgba(255,255,255,0.18)" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+            <circle cx="12" cy="11.5" r="2.6" fill="#fff"/>
+            <path d="M8 8.5L12 11.5M16 8.5L12 11.5M12 11.5V16.5" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="lnd-brand-name">Universal ML Studio</span>
+      </div>
+      <div class="lnd-tog-row">
+        <span class="lnd-tog-label" id="lnd-tog-lbl">Dark</span>
+        <button class="lnd-tog-btn" onclick="lndToggleTheme()" aria-label="Toggle theme">
+          <div class="lnd-tog-track">
+            <div class="lnd-tog-thumb">
+              <svg class="lnd-i-moon" fill="none" stroke="#fff" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+              </svg>
+              <svg class="lnd-i-sun" fill="none" stroke="#fff" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+            </div>
+          </div>
+        </button>
+      </div>
+    </header>
+
+    <!-- Centre card -->
+    <main id="lnd-page">
+      <div id="lnd-card-wrap">
+        <div class="lnd-card-depth-2" aria-hidden="true"></div>
+        <div class="lnd-card-depth"   aria-hidden="true"></div>
+        <div class="lnd-card">
+          <div class="lnd-glyph-wrap">
+            <div class="lnd-ring lnd-ring-3"></div>
+            <div class="lnd-ring lnd-ring-2"></div>
+            <div class="lnd-ring lnd-ring-1"></div>
+            <div class="lnd-glyph">
+              <svg fill="none" viewBox="0 0 24 24">
+                <path d="M12 2L3 7V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V7L12 2Z"
+                  fill="rgba(255,255,255,0.20)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
+                <circle cx="12" cy="11.5" r="2.8" fill="#fff"/>
+                <circle cx="8"  cy="8.5"  r="1.3" fill="#67e8f9"/>
+                <circle cx="16" cy="8.5"  r="1.3" fill="#c0c1ff"/>
+                <circle cx="12" cy="16.5" r="1.3" fill="#6ee7b7"/>
+                <path d="M8 8.5L12 11.5M16 8.5L12 11.5M12 11.5V16.5" stroke="#fff" stroke-width="1.1" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="lnd-badge">
+            <span class="lnd-dot"></span>Platform Active
+          </div>
+
+          <h1 class="lnd-title">
+            <span class="lnd-word"><span>Universal</span></span>&nbsp;
+            <span class="lnd-word"><span>AI/ML</span></span>&nbsp;
+            <span class="lnd-word"><span>Studio</span></span>
+          </h1>
+
+          <p class="lnd-sub">Your end-to-end machine learning workspace —<br>from raw data to audited, production-ready models.</p>
+
+          <div class="lnd-chips">
+            <div class="lnd-chip"><span class="lnd-chip-num">7</span> Built-in Datasets</div>
+            <div class="lnd-chip"><span class="lnd-chip-num">11</span> EDA Analysis Tabs</div>
+            <div class="lnd-chip"><span class="lnd-chip-num">30+</span> Quality Checks</div>
+          </div>
+
+          <div class="lnd-divider"></div>
+
+          <div class="lnd-cta-wrap">
+            <button class="lnd-cta" onclick="enterDashboard()">
+              Let's Get Started
+              <svg class="lnd-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </button>
+            <div class="lnd-enter-hint">
+              <span class="lnd-enter-key">↵</span> Press Enter to begin
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer id="lnd-footer">
+      <p>Crafted with <span class="lnd-heart">♥</span> by Keerthi &amp; Jayakrushna</p>
+    </footer>
+  </div><!-- /#landing-overlay -->
+
+  <script>
+  /* ════════════════════════════════════════════
+     LANDING OVERLAY CONTROLLER
+  ════════════════════════════════════════════ */
+  (function() {
+    const overlay = document.getElementById('landing-overlay');
+    const LND_KEY = 'studio_theme';
+
+    /* ── Show / hide ── */
+    function enterDashboard() {
+      overlay.classList.add('lnd-hidden');
+      /* after transition ends, fully hide to let dashboard be accessible */
+      overlay.addEventListener('transitionend', () => {
+        overlay.style.display = 'none';
+      }, { once: true });
+      /* update URL without reload */
+      history.replaceState(null, '', '/dashboard');
+    }
+
+    /* Exposed globally for the Home button in the dashboard topbar */
+    window.showLanding = function() {
+      overlay.style.display = '';
+      /* force reflow so transition triggers */
+      overlay.offsetHeight;
+      overlay.classList.remove('lnd-hidden');
+      history.replaceState(null, '', '/');
+    };
+
+    /* ── If URL is /dashboard on load, skip the landing ── */
+    if (window.location.pathname === '/dashboard') {
+      overlay.style.display = 'none';
+    }
+
+    /* ── Enter key shortcut ── */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !overlay.classList.contains('lnd-hidden') &&
+          overlay.style.display !== 'none' &&
+          !e.target.closest('input,textarea,select,button')) {
+        enterDashboard();
+      }
+    });
+
+    /* ── CTA click ── */
+    // already wired via onclick="enterDashboard()" — make it global
+    window.enterDashboard = enterDashboard;
+
+    /* ════════════════════════════════════
+       THEME SYNC
+    ════════════════════════════════════ */
+    function lndSyncTheme(t) {
+      document.getElementById('lnd-tog-lbl').textContent = t === 'dark' ? 'Dark' : 'Light';
+      lndSetCanvasColors(t);
+    }
+
+    window.lndToggleTheme = function() {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      /* Delegate to the dashboard's toggleTheme which handles localStorage + html attr */
+      if (typeof toggleTheme === 'function') toggleTheme();
+      lndSyncTheme(next);
+    };
+
+    /* Watch for theme changes driven from dashboard side */
+    const themeObserver = new MutationObserver(() => {
+      lndSyncTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    /* ════════════════════════════════════
+       CANVAS: particles + lines + hexagons
+    ════════════════════════════════════ */
+    const lCanvas = document.getElementById('lnd-canvas');
+    const lCtx    = lCanvas.getContext('2d');
+    let lW, lH, lParticles = [], lHexagons = [];
+    let lPR=99,lPG=102,lPB=241, lLR=99,lLG=102,lLB=241, lHR=99,lHG=102,lHB=241;
+
+    function lndSetCanvasColors(t) {
+      if (t === 'dark') { lPR=99;lPG=102;lPB=241; lLR=99;lLG=102;lLB=241; lHR=99;lHG=102;lHB=241; }
+      else              { lPR=79;lPG=70; lPB=229; lLR=79;lLG=70; lLB=229; lHR=79;lHG=70; lHB=229; }
+    }
+    window.lndSetCanvasColors = lndSetCanvasColors;
+
+    function lMkP() {
+      return { x:Math.random()*lW, y:Math.random()*lH,
+               r:Math.random()*2+0.6, vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
+               o:Math.random()*.55+.25 };
+    }
+    function lMkH() {
+      const s = Math.random()*100+55;
+      return { x:Math.random()*lW, y:Math.random()*lH, size:s,
+               rot:Math.random()*Math.PI*2,
+               rotSpd:(Math.random()*.0007+.0003)*(Math.random()>.5?1:-1),
+               vx:(Math.random()-.5)*.10, vy:(Math.random()-.5)*.10,
+               o:Math.random()*.65+.35 };
+    }
+    function lInitP() { lParticles = Array.from({length:Math.floor(lW*lH/7000)},lMkP); }
+    function lInitH() { lHexagons  = Array.from({length:Math.min(12,Math.max(8,Math.floor(lW*lH/100000)))},lMkH); }
+
+    function lDrawHex(h,dark) {
+      const bo = dark ? 0.09 : 0.14;
+      lCtx.save(); lCtx.translate(h.x,h.y); lCtx.rotate(h.rot);
+      lCtx.beginPath();
+      for(let i=0;i<6;i++){const a=(Math.PI/3)*i;i===0?lCtx.moveTo(Math.cos(a)*h.size,Math.sin(a)*h.size):lCtx.lineTo(Math.cos(a)*h.size,Math.sin(a)*h.size);}
+      lCtx.closePath();
+      lCtx.strokeStyle=`rgba(${lHR},${lHG},${lHB},${bo*h.o})`;lCtx.lineWidth=1.5;lCtx.stroke();lCtx.restore();
+    }
+
+    const L_CONN = 140;
+    function lDraw() {
+      const dark = document.documentElement.getAttribute('data-theme')!=='light';
+      lCtx.clearRect(0,0,lW,lH);
+      for(const h of lHexagons){lDrawHex(h,dark);h.rot+=h.rotSpd;h.x+=h.vx;h.y+=h.vy;const p=h.size+10;if(h.x<-p)h.x=lW+p;if(h.x>lW+p)h.x=-p;if(h.y<-p)h.y=lH+p;if(h.y>lH+p)h.y=-p;}
+      const lbo=dark?.22:.18;
+      for(let i=0;i<lParticles.length;i++)for(let j=i+1;j<lParticles.length;j++){
+        const dx=lParticles[i].x-lParticles[j].x,dy=lParticles[i].y-lParticles[j].y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<L_CONN){lCtx.beginPath();lCtx.moveTo(lParticles[i].x,lParticles[i].y);lCtx.lineTo(lParticles[j].x,lParticles[j].y);lCtx.strokeStyle=`rgba(${lLR},${lLG},${lLB},${(1-d/L_CONN)*lbo})`;lCtx.lineWidth=.8;lCtx.stroke();}
+      }
+      const pbo=dark?1:.85;
+      for(const p of lParticles){lCtx.beginPath();lCtx.arc(p.x,p.y,p.r,0,Math.PI*2);lCtx.fillStyle=`rgba(${lPR},${lPG},${lPB},${p.o*pbo})`;lCtx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<-2)p.x=lW+2;if(p.x>lW+2)p.x=-2;if(p.y<-2)p.y=lH+2;if(p.y>lH+2)p.y=-2;}
+      requestAnimationFrame(lDraw);
+    }
+    function lResize(){lW=lCanvas.width=window.innerWidth;lH=lCanvas.height=window.innerHeight;}
+    window.addEventListener('resize',()=>{lResize();lInitP();lInitH();});
+    const initTheme = localStorage.getItem(LND_KEY)||'dark';
+    lResize(); lndSetCanvasColors(initTheme); lInitP(); lInitH(); lDraw();
+    lndSyncTheme(initTheme);
+
+    /* ── Cursor glow ── */
+    const lcg = document.getElementById('lnd-cursor-glow');
+    let lmx=window.innerWidth/2,lmy=window.innerHeight/2,lgx=lmx,lgy=lmy;
+    overlay.addEventListener('mousemove',e=>{lmx=e.clientX;lmy=e.clientY;});
+    (function lFollow(){lgx+=(lmx-lgx)*.09;lgy+=(lmy-lgy)*.09;lcg.style.left=lgx+'px';lcg.style.top=lgy+'px';requestAnimationFrame(lFollow);})();
+
+    /* ── Card tilt ── */
+    const lcw = document.getElementById('lnd-card-wrap');
+    overlay.addEventListener('mousemove',e=>{
+      const cx=window.innerWidth/2,cy=window.innerHeight/2;
+      const dx=(e.clientX-cx)/cx,dy=(e.clientY-cy)/cy;
+      lcw.style.transform=`perspective(900px) rotateX(${-dy*7}deg) rotateY(${dx*7}deg)`;
+    });
+    overlay.addEventListener('mouseleave',()=>{lcw.style.transition='transform .6s ease';lcw.style.transform='perspective(900px) rotateX(0) rotateY(0)';});
+    overlay.addEventListener('mouseenter',()=>{lcw.style.transition='transform .1s linear';});
+  })();
+  </script>
 </body>
 
 </html>
