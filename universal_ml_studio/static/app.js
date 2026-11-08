@@ -105,20 +105,19 @@ function applyTheme(theme) {
     }
   } catch (e) {}
 
-  const labels = document.querySelectorAll(".theme-toggle-text, #theme-status-text");
-  labels.forEach(el => {
-    el.innerText = theme === "dark" ? "DARK" : "LIGHT";
-  });
-
   // If Plotly charts exist on screen, update their grid colors
   if (typeof Plotly !== "undefined") {
     const isLight = theme === "light";
     const chartIds = [
       "viz-container-confusion", "viz-container-radar", "viz-container-cv",
       "viz-container-bar", "viz-container-feature", "viz-container-perclass",
-      "viz-container-gauge", "viz-container-history", "compare-chart-bar",
-      "compare-chart-heatmap", "compare-chart-scatter", "compare-chart-box",
-      "compare-chart-radar"
+      "viz-container-gauge", "viz-container-history",
+      "compare-chart", "compare-heatmap-chart", "compare-scatter-chart",
+      "compare-cv-chart", "compare-radar-chart",
+      "eda-histogram-chart", "eda-box-chart", "eda-scatter-chart",
+      "eda-heatmap-chart", "eda-bar-chart", "eda-pie-chart",
+      "eda-violin-chart", "eda-kde-chart", "eda-pair-chart",
+      "eda-qq-chart", "eda-time-chart"
     ];
     chartIds.forEach(id => {
       const el = document.getElementById(id);
@@ -1142,8 +1141,11 @@ async function runAutoPreprocess() {
 
 async function applySingleOperation() {
   if (!state.activeDatasetId) return showToast("Select a dataset first", "info");
-  const opType = document.getElementById("prep-op-type").value;
-  const strategy = document.getElementById("prep-strategy").value;
+  const opEl = document.getElementById("prep-op-type");
+  const stratEl = document.getElementById("prep-strategy");
+  if (!opEl || !stratEl) return showToast("Preprocessing controls not found", "error");
+  const opType = opEl.value;
+  const strategy = stratEl.value;
 
   try {
     const res = await fetch(`/api/preprocessing/operation/${state.activeDatasetId}`, {
@@ -1720,12 +1722,13 @@ function renderModelVisualizations(modelMetrics, cvRows, algorithm) {
   const badge = document.getElementById("viz-algo-badge");
   if (badge) badge.textContent = algorithm.replace(/_/g," ").toUpperCase();
 
-  // Track history
+  // Track history (cap at 50 entries to prevent memory leak)
   if (!window._vizHistory) window._vizHistory = [];
   window._vizHistory.push({
     algorithm, timestamp: new Date().toLocaleTimeString(),
     metrics: {...modelMetrics},
   });
+  if (window._vizHistory.length > 50) window._vizHistory.shift();
 
   const panel = document.getElementById("ml-viz-panel");
   if (panel) panel.style.display = "";
@@ -2462,317 +2465,6 @@ function initGroupedMetricsSelect(results) {
 }
 
 
-
-// \u2500\u2500 Chart 1: Confusion Matrix Heatmap \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function renderConfusionMatrix(metrics) {
-  const el = document.getElementById("viz-container-confusion");
-  if (!el) return;
-
-  const cm = metrics.confusion_matrix;
-  const labels = metrics.class_labels || (cm ? cm.map((_, i) => `Class ${i}`) : []);
-
-  if (!cm || !cm.length) {
-    el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px;color:var(--text-muted);font-size:14px;">
-      Confusion matrix not available (regression task or missing data)</div>`;
-    return;
-  }
-
-  // Normalize values for color intensity
-  const maxVal = Math.max(...cm.flat());
-  const zNorm = cm.map(row => row.map(v => v / (maxVal || 1)));
-
-  // Annotations
-  const annotations = [];
-  cm.forEach((row, i) => {
-    row.forEach((val, j) => {
-      annotations.push({
-        x: labels[j], y: labels[i],
-        text: `<b>${val}</b>`,
-        font: { color: val / maxVal > 0.5 ? "#0b101c" : "#e6edf3", size: 14, family: "JetBrains Mono" },
-        showarrow: false,
-      });
-    });
-  });
-
-  const trace = {
-    z: zNorm,
-    x: labels.map(l => `Predicted: ${l}`),
-    y: labels.map(l => `Actual: ${l}`),
-    type: "heatmap",
-    colorscale: [
-      [0, "rgba(239,68,68,0.15)"],
-      [0.5, "rgba(99,102,241,0.5)"],
-      [1, "rgba(52,211,153,0.9)"],
-    ],
-    showscale: true,
-    colorbar: { thickness: 12, len: 0.8, tickfont: { color: "#8b949e", size: 10 } },
-    hoverongaps: false,
-    hovertemplate: "Actual: %{y}<br>Predicted: %{x}<br>Count: <b>%{customdata}</b><extra></extra>",
-    customdata: cm,
-  };
-
-  const layout = {
-    ...structuredClone(_PLOTLY_LAYOUT_BASE),
-    title: { text: "Confusion Matrix", font: { color: "#c9d1d9", size: 14 }, x: 0.05 },
-    annotations,
-    xaxis: { tickfont: { color: "#c9d1d9", size: 11 }, side: "bottom" },
-    yaxis: { tickfont: { color: "#c9d1d9", size: 11 }, autorange: "reversed" },
-    margin: { t: 50, b: 80, l: 100, r: 30 },
-  };
-
-  Plotly.newPlot(el, [trace], layout, { responsive: true, displayModeBar: false });
-}
-
-// \u2500\u2500 Chart 2: Metric Radar Chart \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function renderMetricRadar(metrics, algorithm) {
-  const el = document.getElementById("viz-container-radar");
-  if (!el) return;
-
-  // Only include bounded [0,1] metrics for radar meaningfulness
-  const RADAR_KEYS = ["accuracy","precision","recall","f1",
-                      "balanced_accuracy","mcc","roc_auc","specificity","sensitivity"];
-  const available = RADAR_KEYS.filter(k => typeof metrics[k] === "number" && metrics[k] >= 0 && metrics[k] <= 1);
-
-  if (available.length < 3) {
-    el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px;color:var(--text-muted);font-size:14px;">
-      Not enough bounded metrics for radar chart (need \u2265 3 metrics in [0,1])</div>`;
-    return;
-  }
-
-  const labels = [...available, available[0]]; // close the polygon
-  const values = available.map(k => metrics[k]);
-  const r = [...values, values[0]];
-
-  const trace = {
-    type: "scatterpolar",
-    r,
-    theta: labels.map(k => _METRIC_LABELS[k] || k),
-    fill: "toself",
-    fillcolor: "rgba(56,205,186,0.15)",
-    line: { color: "rgba(56,205,186,0.9)", width: 2 },
-    marker: { color: "rgba(56,205,186,1)", size: 6 },
-    name: algorithm,
-    hovertemplate: "<b>%{theta}</b><br>Value: %{r:.4f}<extra></extra>",
-  };
-
-  const layout = {
-    paper_bgcolor: "transparent",
-    polar: {
-      bgcolor: "rgba(0,0,0,0)",
-      radialaxis: {
-        visible: true, range: [0, 1],
-        color: "#8b949e", gridcolor: "rgba(255,255,255,0.08)",
-        tickfont: { size: 9, color: "#8b949e" },
-      },
-      angularaxis: {
-        tickfont: { size: 11, color: "#c9d1d9" },
-        linecolor: "rgba(255,255,255,0.1)",
-        gridcolor: "rgba(255,255,255,0.06)",
-      },
-    },
-    title: { text: `${algorithm.replace(/_/g," ")} — Metric Radar`, font: { color: "#c9d1d9", size: 13 }, x: 0.05 },
-    showlegend: false,
-    margin: { t: 50, b: 20, l: 30, r: 30 },
-  };
-
-  Plotly.newPlot(el, [trace], layout, { responsive: true, displayModeBar: false });
-}
-
-// \u2500\u2500 Chart 3: CV Fold Scores Bar Chart \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function renderCVFoldsChart(cvRows, algorithm) {
-  const el = document.getElementById("viz-container-cv");
-  if (!el) return;
-
-  const folds = cvRows.filter(e => /^cv_fold_\d+$/.test(e.metric_name))
-                      .sort((a, b) => a.metric_name.localeCompare(b.metric_name));
-
-  if (!folds.length) {
-    el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:220px;color:var(--text-muted);">No CV fold data available</div>`;
-    return;
-  }
-
-  const xLabels = folds.map(f => f.metric_name.replace("cv_fold_", "Fold "));
-  const yValues = folds.map(f => +f.metric_value.toFixed(4));
-  const avg = yValues.reduce((s, v) => s + v, 0) / yValues.length;
-
-  const trace = {
-    x: xLabels, y: yValues, type: "bar",
-    marker: {
-      color: yValues.map(v => v >= avg ? "rgba(56,205,186,0.85)" : "rgba(239,68,68,0.7)"),
-      line: { color: "rgba(255,255,255,0.1)", width: 1 },
-    },
-    text: yValues.map(v => v.toFixed(4)),
-    textposition: "outside",
-    textfont: { size: 11, color: "#c9d1d9" },
-    hovertemplate: "%{x}: <b>%{y:.4f}</b><extra></extra>",
-  };
-
-  // Average line
-  const avgLine = {
-    type: "scatter", mode: "lines",
-    x: xLabels, y: xLabels.map(() => avg),
-    line: { color: "rgba(251,191,36,0.8)", width: 2, dash: "dot" },
-    name: `Mean: ${avg.toFixed(4)}`,
-    hovertemplate: "Mean: <b>" + avg.toFixed(4) + "</b><extra></extra>",
-  };
-
-  const layout = {
-    ...structuredClone(_PLOTLY_LAYOUT_BASE),
-    title: { text: "Cross-Validation Fold Scores", font: { color: "#c9d1d9", size: 13 }, x: 0.05 },
-    yaxis: {
-      title: "Score", titlefont: { color: "#8b949e", size: 11 },
-      tickfont: { color: "#c9d1d9", size: 10 },
-      gridcolor: "rgba(255,255,255,0.07)",
-      range: [Math.max(0, Math.min(...yValues) - 0.05), Math.min(1.05, Math.max(...yValues) + 0.05)],
-    },
-    xaxis: { tickfont: { color: "#c9d1d9", size: 11 }, gridcolor: "rgba(255,255,255,0.04)" },
-    showlegend: true,
-    legend: { font: { color: "#8b949e", size: 11 }, bgcolor: "transparent" },
-    bargap: 0.3,
-    margin: { t: 50, b: 50, l: 60, r: 20 },
-  };
-
-  Plotly.newPlot(el, [trace, avgLine], layout, { responsive: true, displayModeBar: false });
-}
-
-// \u2500\u2500 Chart 4: All Metrics Horizontal Bar \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function renderMetricsBars(metrics, algorithm) {
-  const el = document.getElementById("viz-container-bar");
-  if (!el) return;
-
-  const pairs = Object.entries(metrics)
-    .filter(([k, v]) => !_SKIP_METRICS.has(k) && typeof v === "number" && v >= 0)
-    .sort((a, b) => b[1] - a[1]);
-
-  if (!pairs.length) {
-    el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:220px;color:var(--text-muted);">No scalar metrics available</div>`;
-    return;
-  }
-
-  const trace = {
-    x: pairs.map(([, v]) => +v.toFixed(4)),
-    y: pairs.map(([k]) => _METRIC_LABELS[k] || k),
-    type: "bar",
-    orientation: "h",
-    marker: {
-      color: pairs.map(([, v]) => {
-        if (v >= 0.9) return "rgba(52,211,153,0.85)";
-        if (v >= 0.7) return "rgba(56,205,186,0.75)";
-        if (v >= 0.5) return "rgba(251,191,36,0.75)";
-        return "rgba(239,68,68,0.7)";
-      }),
-      line: { color: "rgba(255,255,255,0.08)", width: 1 },
-    },
-    text: pairs.map(([, v]) => v.toFixed(4)),
-    textposition: "outside",
-    textfont: { size: 10, color: "#c9d1d9" },
-    hovertemplate: "<b>%{y}</b>: %{x:.4f}<extra></extra>",
-  };
-
-  const layout = {
-    ...structuredClone(_PLOTLY_LAYOUT_BASE),
-    title: { text: `All Metrics — ${algorithm.replace(/_/g," ")}`, font: { color: "#c9d1d9", size: 13 }, x: 0.05 },
-    xaxis: {
-      range: [0, 1.12], tickfont: { color: "#c9d1d9", size: 10 },
-      gridcolor: "rgba(255,255,255,0.07)",
-    },
-    yaxis: {
-      tickfont: { color: "#c9d1d9", size: 11 },
-      automargin: true,
-    },
-    bargap: 0.25,
-    margin: { t: 50, b: 40, l: 160, r: 60 },
-  };
-
-  const height = Math.max(280, pairs.length * 32 + 80);
-  el.style.minHeight = height + "px";
-  Plotly.newPlot(el, [trace], layout, { responsive: true, displayModeBar: false });
-}
-
-// \u2500\u2500 Chart 5: Multi-Metric Grouped Bar (Compare) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function renderGroupedBarChart() {
-  if (!_lastComparisonData) return;
-  const el = document.getElementById("compare-grouped-chart");
-  if (!el) return;
-
-  const results = (_lastComparisonData.results || []).filter(r => r.metrics && Object.keys(r.metrics).length > 0);
-  if (!results.length) return;
-
-  // Figure out which metrics to show
-  const sel = document.getElementById("compare-grouped-metrics");
-  let selectedMetrics = sel ? Array.from(sel.selectedOptions).map(o => o.value) : [];
-  if (!selectedMetrics.length) {
-    // Default: top 6 preferred metrics that exist
-    const PREFERRED = ["accuracy","f1","precision","recall","mcc","balanced_accuracy","roc_auc"];
-    const allKeys = new Set();
-    results.forEach(r => Object.keys(r.metrics).forEach(k => {
-      if (!_SKIP_METRICS.has(k) && typeof r.metrics[k] === "number") allKeys.add(k);
-    }));
-    selectedMetrics = PREFERRED.filter(k => allKeys.has(k)).slice(0, 6);
-  }
-
-  if (!selectedMetrics.length) return;
-
-  const algorithms = results.map(r => r.algorithm);
-  const traces = selectedMetrics.map((metric, mi) => ({
-    name: _METRIC_LABELS[metric] || metric,
-    x: algorithms,
-    y: algorithms.map(algo => {
-      const r = results.find(r => r.algorithm === algo);
-      return r && typeof r.metrics[metric] === "number" ? +r.metrics[metric].toFixed(4) : 0;
-    }),
-    type: "bar",
-    marker: { color: _VIZ_COLORS[mi % _VIZ_COLORS.length] },
-    hovertemplate: `<b>${_METRIC_LABELS[metric] || metric}</b><br>%{x}: %{y:.4f}<extra></extra>`,
-  }));
-
-  const layout = {
-    ...structuredClone(_PLOTLY_LAYOUT_BASE),
-    barmode: "group",
-    title: { text: "Algorithm Comparison \u2014 Multiple Metrics", font: { color: "#c9d1d9", size: 13 }, x: 0.05 },
-    xaxis: { tickfont: { color: "#c9d1d9", size: 11 }, gridcolor: "rgba(255,255,255,0.04)" },
-    yaxis: {
-      title: "Score", titlefont: { color: "#8b949e", size: 11 },
-      tickfont: { color: "#c9d1d9", size: 10 },
-      gridcolor: "rgba(255,255,255,0.07)",
-      range: [0, 1.1],
-    },
-    legend: { font: { color: "#8b949e", size: 11 }, bgcolor: "rgba(0,0,0,0.3)",
-              bordercolor: "rgba(255,255,255,0.08)", borderwidth: 1 },
-    bargap: 0.15, bargroupgap: 0.05,
-    margin: { t: 50, b: 70, l: 55, r: 20 },
-  };
-
-  Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false });
-}
-
-// Populate the grouped-metrics multi-select and render on compare complete
-function initGroupedMetricsSelect(results) {
-  const sel = document.getElementById("compare-grouped-metrics");
-  if (!sel || !results.length) return;
-
-  const allKeys = new Set();
-  results.forEach(r => Object.keys(r.metrics || {}).forEach(k => {
-    if (!_SKIP_METRICS.has(k) && typeof r.metrics[k] === "number") allKeys.add(k);
-  }));
-
-  const PREFERRED = ["accuracy","f1","precision","recall","mcc","balanced_accuracy","roc_auc",
-                     "f1_macro","specificity","r2","mae","rmse"];
-  const orderedKeys = PREFERRED.filter(k => allKeys.has(k))
-    .concat([...allKeys].filter(k => !PREFERRED.includes(k)));
-
-  // Change to a proper multi-select with checkboxes via size
-  sel.multiple = true;
-  sel.size = Math.min(5, orderedKeys.length);
-  sel.innerHTML = orderedKeys.map((k, i) =>
-    `<option value="${k}" ${i < 6 ? "selected" : ""}>${_METRIC_LABELS[k] || k}</option>`
-  ).join("");
-
-  renderGroupedBarChart();
-}
-
-
-
 async function refreshModelsList() {
   try {
     const res = await fetch("/api/models");
@@ -2810,8 +2502,10 @@ async function renderPredictionForm(modelId) {
   const modelMeta = state.models.find(m => m.id === modelId);
   state.selectedModel = modelMeta;
 
-  // Use features from active dataset or defaults
-  const features = state.previewData?.columns?.filter(c => c.toLowerCase() !== "target" && c.toLowerCase() !== "survived") || ["feature_1", "feature_2"];
+  // Use features from active dataset, excluding the actual target column
+  const targetSel = document.getElementById("ml-target-col");
+  const targetCol = targetSel ? targetSel.value : "target";
+  const features = state.previewData?.columns?.filter(c => c !== targetCol) || ["feature_1", "feature_2"];
 
   features.forEach(f => {
     const group = document.createElement("div");

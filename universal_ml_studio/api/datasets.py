@@ -142,3 +142,5 @@ def download_dataset(dataset_id: str):
         )
     except DatasetNotFoundError:
         raise HTTPException(status_code=404, detail=f"Dataset '{dataset_id}' not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

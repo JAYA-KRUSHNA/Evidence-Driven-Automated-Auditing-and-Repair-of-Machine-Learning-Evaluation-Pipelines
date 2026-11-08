@@ -6,7 +6,6 @@ and multi-format report exports (PDF, HTML, Excel).
 
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Query, Response, status
-from fastapi.responses import Response
 
 from ..database.connection import get_session
 from ..database.models import EDAResult

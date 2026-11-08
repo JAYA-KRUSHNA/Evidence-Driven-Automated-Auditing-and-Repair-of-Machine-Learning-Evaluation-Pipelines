@@ -3,6 +3,7 @@ Machine Learning REST API endpoints.
 """
 
 import json
+import pandas as pd
 from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -357,7 +358,7 @@ def predict(req: PredictRequest):
                 raise HTTPException(status_code=400, detail="input_data list is empty")
             pred_result = PredictionEngine.batch_predict(
                 model=model,
-                df=__import__("pandas").DataFrame(req.input_data),
+                df=pd.DataFrame(req.input_data),
                 feature_columns=feature_columns,
                 label_encoder=label_encoder,
                 task_type=task_type,

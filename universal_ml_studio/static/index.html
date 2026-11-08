@@ -18,7 +18,7 @@
   <div class="app-container">
     <!-- ── Sidebar Navigation ──────────────────────────────────────── -->
     <aside class="sidebar">
-      <a href="/" class="brand" title="Back to Home">
+      <a href="#" onclick="showLanding(); return false;" class="brand" title="Back to Home">
         <div class="brand-icon" title="Veritas Neural Audit Shield">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2L3 7V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V7L12 2Z"
@@ -1267,7 +1267,7 @@
             <div id="viz-container-feature" style="width:100%; min-height:360px; display:none;"></div>
             <div id="viz-container-perclass" style="width:100%; min-height:320px; display:none;"></div>
             <div id="viz-container-gauge"
-              style="width:100%; min-height:260px; display:none; display:flex; flex-wrap:wrap; gap:0;"></div>
+              style="width:100%; min-height:260px; display:none; flex-wrap:wrap; gap:0;"></div>
             <div id="viz-container-history" style="width:100%; min-height:300px; display:none;"></div>
           </div>
 
@@ -2233,6 +2233,9 @@
 
     /* ── Show / hide ── */
     function enterDashboard() {
+      cancelAnimationFrame(lDrawRAF);
+      cancelAnimationFrame(lFollowRAF);
+      themeObserver.disconnect();
       overlay.classList.add('lnd-hidden');
       /* after transition ends, fully hide to let dashboard be accessible */
       overlay.addEventListener('transitionend', () => {
@@ -2296,6 +2299,7 @@
     const lCanvas = document.getElementById('lnd-canvas');
     const lCtx    = lCanvas.getContext('2d');
     let lW, lH, lParticles = [], lHexagons = [];
+    let lDrawRAF, lFollowRAF;
     let lPR=99,lPG=102,lPB=241, lLR=99,lLG=102,lLB=241, lHR=99,lHG=102,lHB=241;
 
     function lndSetCanvasColors(t) {
@@ -2341,7 +2345,7 @@
       }
       const pbo=dark?1:.85;
       for(const p of lParticles){lCtx.beginPath();lCtx.arc(p.x,p.y,p.r,0,Math.PI*2);lCtx.fillStyle=`rgba(${lPR},${lPG},${lPB},${p.o*pbo})`;lCtx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<-2)p.x=lW+2;if(p.x>lW+2)p.x=-2;if(p.y<-2)p.y=lH+2;if(p.y>lH+2)p.y=-2;}
-      requestAnimationFrame(lDraw);
+      lDrawRAF = requestAnimationFrame(lDraw);
     }
     function lResize(){lW=lCanvas.width=window.innerWidth;lH=lCanvas.height=window.innerHeight;}
     window.addEventListener('resize',()=>{lResize();lInitP();lInitH();});
@@ -2353,7 +2357,7 @@
     const lcg = document.getElementById('lnd-cursor-glow');
     let lmx=window.innerWidth/2,lmy=window.innerHeight/2,lgx=lmx,lgy=lmy;
     overlay.addEventListener('mousemove',e=>{lmx=e.clientX;lmy=e.clientY;});
-    (function lFollow(){lgx+=(lmx-lgx)*.09;lgy+=(lmy-lgy)*.09;lcg.style.left=lgx+'px';lcg.style.top=lgy+'px';requestAnimationFrame(lFollow);})();
+    (function lFollow(){lgx+=(lmx-lgx)*.09;lgy+=(lmy-lgy)*.09;lcg.style.left=lgx+'px';lcg.style.top=lgy+'px';lFollowRAF=requestAnimationFrame(lFollow);})();
 
     /* ── Card tilt ── */
     const lcw = document.getElementById('lnd-card-wrap');

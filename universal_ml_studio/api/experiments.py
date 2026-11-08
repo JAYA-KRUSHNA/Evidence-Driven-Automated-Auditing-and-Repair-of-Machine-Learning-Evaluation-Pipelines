@@ -54,4 +54,7 @@ def delete_experiment(experiment_id: str):
 @router.post("/compare", status_code=status.HTTP_200_OK)
 def compare_experiments(req: ExperimentCompareRequest):
     """Compare multiple experiments side by side on evaluation metrics."""
-    return ExperimentTracker.compare(req.experiment_ids)
+    try:
+        return ExperimentTracker.compare(req.experiment_ids)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
