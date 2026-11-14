@@ -402,7 +402,7 @@ class AggregationLeakageAudit(BaseAudit):
                             "4. After correction, re-evaluate model performance — inflated metrics "
                             "from the original paper dropped significantly after this fix."
                         ),
-                        auto_correctable=False,
+                        auto_correctable=True,  # LFA correction can be applied automatically
                     ))
 
             except Exception as e:

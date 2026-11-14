@@ -211,3 +211,86 @@ class CorrectionRules:
         )
 
         return df_corrected, action
+
+    @staticmethod
+    def apply_lfa_correction(
+        df: pd.DataFrame,
+        entity_column: str,
+        aggregate_columns: list[str],
+        target_column: str,
+        time_column: str = None,
+    ) -> tuple[pd.DataFrame, CorrectionAction]:
+        """
+        Apply Leak-Free Aggregation (LFA) — the core fix from the LIAR2 base paper.
+
+        For each row i belonging to entity E:
+        - If time_column is provided: compute aggregate using rows of E with time < time_i
+        - Otherwise: compute using all rows of E EXCEPT row i (leave-one-out)
+
+        This eliminates both self-inclusion leakage and cross-split aggregation leakage.
+        """
+        if entity_column not in df.columns:
+            return df, None
+
+        df_corrected = df.copy()
+        corrected_cols = []
+
+        for agg_col in aggregate_columns:
+            if agg_col not in df_corrected.columns:
+                continue
+            if not pd.api.types.is_numeric_dtype(df_corrected[agg_col]):
+                continue
+
+            lfa_col_name = f"{agg_col}_lfa"
+            lfa_values = pd.Series(index=df_corrected.index, dtype=float)
+
+            if time_column and time_column in df_corrected.columns:
+                # Temporal-honest LFA: use only rows with earlier timestamp
+                try:
+                    times = pd.to_datetime(df_corrected[time_column], errors="coerce")
+                    for idx in df_corrected.index:
+                        entity = df_corrected.loc[idx, entity_column]
+                        t_i = times.loc[idx]
+                        if pd.isna(t_i):
+                            lfa_values.loc[idx] = np.nan
+                            continue
+                        mask = (df_corrected[entity_column] == entity) & (times < t_i)
+                        prior_rows = df_corrected.loc[mask, agg_col]
+                        lfa_values.loc[idx] = prior_rows.mean() if len(prior_rows) > 0 else 0.0
+                except Exception:
+                    continue
+            else:
+                # Leave-one-out LFA: exclude the current row from its entity's aggregate
+                entity_groups = df_corrected.groupby(entity_column)[agg_col]
+                entity_sum = entity_groups.transform("sum")
+                entity_count = entity_groups.transform("count")
+                # Leave-one-out mean = (sum - self) / (count - 1)
+                loo_mean = (entity_sum - df_corrected[agg_col]) / (entity_count - 1).clip(lower=1)
+                lfa_values = loo_mean
+
+            df_corrected[lfa_col_name] = lfa_values
+            # Drop the original leaky column
+            df_corrected = df_corrected.drop(columns=[agg_col])
+            corrected_cols.append({"original": agg_col, "lfa_replacement": lfa_col_name})
+
+        if not corrected_cols:
+            return df, None
+
+        method = f"temporal-honest (sorted by '{time_column}')" if time_column else "leave-one-out"
+        action = CorrectionAction(
+            correction_type="apply_lfa_correction",
+            description=(
+                f"Applied Leak-Free Aggregation (LFA) [{method}] "
+                f"to {len(corrected_cols)} column(s) grouped by '{entity_column}'. "
+                f"Original leaky columns replaced with LFA versions. "
+                f"(Base paper: LIAR2 — Self-inclusion & cross-split leakage eliminated)"
+            ),
+            changes={
+                "entity_column": entity_column,
+                "time_column": time_column,
+                "lfa_method": method,
+                "corrected_columns": corrected_cols,
+            },
+        )
+
+        return df_corrected, action

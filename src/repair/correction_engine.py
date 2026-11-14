@@ -293,6 +293,32 @@ class CorrectionEngine:
             )
             return action
 
+        elif category == AuditCategory.AGGREGATION_LEAKAGE:
+            # Apply the base paper's Leak-Free Aggregation (LFA) fix
+            evidence = finding.evidence if isinstance(finding.evidence, dict) else {}
+            entity_col = evidence.get("entity_column", "")
+            leaking_features = evidence.get("leaking_features", evidence.get("uniform_features", []))
+
+            if entity_col and entity_col in df.columns and leaking_features:
+                agg_cols = [
+                    f["feature"] if isinstance(f, dict) else str(f)
+                    for f in leaking_features[:5]
+                ]
+                agg_cols = [c for c in agg_cols if c in df.columns and c != target_column]
+
+                if agg_cols:
+                    temporal_cols = evidence.get("datetime_columns_in_dataset", [])
+                    time_col = temporal_cols[0] if temporal_cols else None
+
+                    _, action = self.rules.apply_lfa_correction(
+                        df=df,
+                        entity_column=entity_col,
+                        aggregate_columns=agg_cols,
+                        target_column=target_column,
+                        time_column=time_col,
+                    )
+                    return action
+
         return None
 
     def _apply_action(

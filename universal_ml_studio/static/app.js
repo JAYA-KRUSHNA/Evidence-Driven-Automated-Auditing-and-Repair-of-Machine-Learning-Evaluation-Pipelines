@@ -2840,9 +2840,9 @@ async function runPipelineRepair() {
       }
     }
 
-    // Render Metrics Before vs After
+    // Render Metrics Before vs After (with delta)
     renderMetricComparisonList("repair-before-metrics-list", data.before_metrics || {});
-    renderMetricComparisonList("repair-after-metrics-list", data.after_metrics || {});
+    renderMetricComparisonList("repair-after-metrics-list", data.after_metrics || {}, data.before_metrics || {});
 
     showToast("Pipeline repair successfully executed!", "success");
   } catch (err) {
@@ -2855,7 +2855,7 @@ async function runPipelineRepair() {
   }
 }
 
-function renderMetricComparisonList(containerId, metrics) {
+function renderMetricComparisonList(containerId, metrics, beforeMetrics = null) {
   const box = document.getElementById(containerId);
   if (!box) return;
 
@@ -2865,12 +2865,37 @@ function renderMetricComparisonList(containerId, metrics) {
     return;
   }
 
-  box.innerHTML = entries.map(([k, v]) => `
+  box.innerHTML = entries.map(([k, v]) => {
+    const isNum = typeof v === "number";
+    const displayVal = isNum ? v.toFixed(4) : v;
+
+    // Compute delta vs before if this is the "after" panel
+    let deltaHtml = "";
+    if (beforeMetrics && isNum && k in beforeMetrics && typeof beforeMetrics[k] === "number") {
+      const before = beforeMetrics[k];
+      const delta = v - before;
+      const pct = before !== 0 ? ((delta / Math.abs(before)) * 100).toFixed(1) : "N/A";
+      const isImprovement = k.toLowerCase().includes("acc") || k.toLowerCase().includes("f1") ||
+                             k.toLowerCase().includes("r2") || k.toLowerCase().includes("auc") ||
+                             k.toLowerCase().includes("recall") || k.toLowerCase().includes("precision");
+      // For error metrics (mae, mse, rmse, mape), lower is better
+      const isErrorMetric = k.toLowerCase().includes("mae") || k.toLowerCase().includes("mse") ||
+                             k.toLowerCase().includes("rmse") || k.toLowerCase().includes("mape");
+      const improved = isErrorMetric ? delta < 0 : delta > 0;
+      const deltaColor = improved ? "var(--accent-emerald-light)" : (delta === 0 ? "var(--text-muted)" : "#f87171");
+      const arrow = delta > 0 ? "▲" : (delta < 0 ? "▼" : "→");
+      deltaHtml = `<span style="font-size:11px; color:${deltaColor}; font-family:var(--font-mono); margin-left:8px;">${arrow} ${pct !== "N/A" ? pct + "%" : "—"}</span>`;
+    }
+
+    return `
     <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-card-hover); border:1px solid var(--border-subtle); border-radius:var(--radius-sm);">
       <span style="color:var(--text-muted); font-size:12px; text-transform:uppercase; font-family:var(--font-mono);">${k.replace(/_/g, ' ')}</span>
-      <strong style="color:var(--text-bright); font-family:var(--font-mono); font-size:13px;">${typeof v === "number" ? v.toFixed(4) : v}</strong>
+      <div style="display:flex; align-items:center;">
+        <strong style="color:var(--text-bright); font-family:var(--font-mono); font-size:13px;">${displayVal}</strong>
+        ${deltaHtml}
+      </div>
     </div>
-  `).join("");
+  `}).join("");
 }
 
 // ═══════════════════════════════════════════════════════════════════

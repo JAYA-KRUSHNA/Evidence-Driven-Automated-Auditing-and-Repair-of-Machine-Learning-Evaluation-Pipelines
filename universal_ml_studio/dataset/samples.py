@@ -1,7 +1,7 @@
 """
 Sample Dataset Manager.
 
-Provides 7 built-in datasets that work offline (sourced from scikit-learn
+Provides 8 built-in datasets that work offline (sourced from scikit-learn
 and hand-crafted Titanic data).  Each sample is saved as a CSV on first
 access, then served from disk on subsequent loads.
 
@@ -76,6 +76,13 @@ _SAMPLE_CATALOG: dict[str, dict[str, Any]] = {
         "task": "regression",
         "description": "Predict disease progression one year after baseline.",
         "target_column": "target",
+    },
+    "liar2_leakage_demo": {
+        "display_name": "⚠ LIAR2 Leakage Demo",
+        "task": "classification",
+        "description": "Synthetic dataset replicating the LIAR2 base paper leakage: speaker entity aggregation + temporal ordering issues. Run the Pipeline Auditor to see TMP & AGG findings.",
+        "target_column": "label",
+        "num_classes": 2,
     },
 }
 
@@ -175,6 +182,74 @@ def _load_diabetes_regression() -> pd.DataFrame:
     return data.frame  # type: ignore[attr-defined]
 
 
+def _load_liar2_leakage_demo() -> pd.DataFrame:
+    """
+    Synthetic dataset that deliberately replicates the LIAR2 base paper
+    leakage patterns so the Pipeline Auditor's TMP and AGG checks fire.
+
+    Structure mirrors the LIAR2 paper:
+    - 'speaker': entity column (10 speakers, each with ~50 statements)
+    - 'statement_date': temporal column (2018-2022, ordered)
+    - 'speaker_true_count': LEAKY — computed globally (self-inclusion + cross-split)
+    - 'speaker_false_count': LEAKY — same pattern
+    - 'speaker_credibility_score': LEAKY — correlates with global per-speaker label rate
+    - 'label': binary target (0=false, 1=true statement)
+    """
+    rng = np.random.RandomState(2024)
+    n = 500
+    n_speakers = 10
+
+    speakers = [f"Speaker_{i}" for i in range(1, n_speakers + 1)]
+    # Each speaker has a true innate credibility (determines their true-label rate)
+    speaker_true_rate = rng.uniform(0.2, 0.8, size=n_speakers)
+    speaker_map = {s: speaker_true_rate[i] for i, s in enumerate(speakers)}
+
+    # Assign each statement to a speaker
+    statement_speakers = rng.choice(speakers, size=n)
+
+    # Generate temporal column (sorted within each speaker, global random order = leakage)
+    base_date = pd.Timestamp("2018-01-01")
+    days = rng.randint(0, 365 * 4, size=n)  # random across 4 years — NOT sorted = temporal leak
+    statement_dates = [base_date + pd.Timedelta(days=int(d)) for d in days]
+
+    # Generate labels based on speaker's innate credibility
+    labels = np.array([
+        int(rng.random() < speaker_map[sp]) for sp in statement_speakers
+    ])
+
+    # Build a DataFrame first so we can compute GLOBAL (leaky) aggregates
+    df_base = pd.DataFrame({
+        "speaker": statement_speakers,
+        "statement_date": statement_dates,
+        "label": labels,
+    })
+
+    # LEAKY feature: global per-speaker true count (includes ALL rows — the LIAR2 bug)
+    global_true_count = df_base.groupby("speaker")["label"].sum()
+    global_false_count = df_base.groupby("speaker")["label"].apply(lambda x: (x == 0).sum())
+    global_total = df_base.groupby("speaker")["label"].count()
+    global_credibility = (global_true_count / global_total).round(4)
+
+    df_base["speaker_true_count"] = df_base["speaker"].map(global_true_count).astype(int)
+    df_base["speaker_false_count"] = df_base["speaker"].map(global_false_count).astype(int)
+    df_base["speaker_credibility_score"] = df_base["speaker"].map(global_credibility)
+
+    # Add some clean non-leaky features for realism
+    df_base["statement_length"] = rng.randint(20, 300, size=n)
+    df_base["topic"] = rng.choice(["economy", "health", "foreign_policy", "education", "crime"], size=n)
+    df_base["source_reliability"] = rng.uniform(0.3, 1.0, size=n).round(3)
+    df_base["num_citations"] = rng.poisson(lam=3, size=n)
+
+    # Reorder columns nicely
+    cols = [
+        "speaker", "statement_date", "topic",
+        "speaker_true_count", "speaker_false_count", "speaker_credibility_score",
+        "statement_length", "source_reliability", "num_citations",
+        "label",
+    ]
+    return df_base[cols].reset_index(drop=True)
+
+
 _LOADERS: dict[str, callable] = {
     "iris": _load_iris,
     "breast_cancer": _load_breast_cancer,
@@ -183,6 +258,7 @@ _LOADERS: dict[str, callable] = {
     "titanic": _load_titanic,
     "california_housing": _load_california_housing,
     "diabetes_regression": _load_diabetes_regression,
+    "liar2_leakage_demo": _load_liar2_leakage_demo,
 }
 
 
