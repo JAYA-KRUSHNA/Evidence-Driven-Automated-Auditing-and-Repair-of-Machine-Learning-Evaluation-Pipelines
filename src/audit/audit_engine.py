@@ -20,6 +20,8 @@ from src.audit.split_strategy import SplitStrategyAudit
 from src.audit.performance_anomalies import PerformanceAnomalyAudit
 from src.audit.evaluation_integrity import EvaluationIntegrityAudit
 from src.audit.data_quality import DataQualityAudit
+from src.audit.temporal_leakage import TemporalLeakageAudit
+from src.audit.aggregation_leakage import AggregationLeakageAudit
 
 from src.database.models import get_session, init_db
 from src.database.repository import AuditRunRepository, FindingRepository
@@ -103,6 +105,9 @@ class AuditEngine:
         self.performance_anomalies = PerformanceAnomalyAudit()
         self.evaluation_integrity = EvaluationIntegrityAudit()
         self.data_quality = DataQualityAudit()
+        # Base-paper inspired additions (LIAR2 / temporal & aggregation leakage)
+        self.temporal_leakage = TemporalLeakageAudit()
+        self.aggregation_leakage = AggregationLeakageAudit()
 
     def run_full_audit(
         self,
@@ -154,7 +159,7 @@ class AuditEngine:
                 progress_callback(step, total, msg)
             logger.info(f"[Audit {step}/{total}] {msg}")
 
-        total_steps = 7
+        total_steps = 9
 
         try:
             # Create audit run in DB
@@ -246,6 +251,34 @@ class AuditEngine:
                 result.findings.extend(findings)
             except Exception as e:
                 logger.error(f"Data quality audit failed: {e}")
+
+            # Audit H: Temporal Leakage (base-paper contribution)
+            report(8, total_steps, "Checking for temporal leakage (LIAR2 paper method)...")
+            try:
+                findings = self.temporal_leakage.run(
+                    df=df,
+                    target_column=target_column,
+                    task_type=task_type,
+                    X_train=X_train,
+                    X_test=X_test,
+                )
+                result.findings.extend(findings)
+            except Exception as e:
+                logger.error(f"Temporal leakage audit failed: {e}")
+
+            # Audit I: Entity/Group Aggregation Leakage (base-paper contribution)
+            report(9, total_steps, "Checking for entity aggregation leakage (LIAR2 paper method)...")
+            try:
+                findings = self.aggregation_leakage.run(
+                    df=df,
+                    target_column=target_column,
+                    task_type=task_type,
+                    X_train=X_train,
+                    X_test=X_test,
+                )
+                result.findings.extend(findings)
+            except Exception as e:
+                logger.error(f"Aggregation leakage audit failed: {e}")
 
             # Store findings
             result.status = "completed"

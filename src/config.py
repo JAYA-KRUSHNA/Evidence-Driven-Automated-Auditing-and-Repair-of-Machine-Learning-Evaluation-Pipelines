@@ -102,6 +102,9 @@ class AuditCategory:
     PERFORMANCE_ANOMALY = "performance_anomaly"
     EVALUATION_INTEGRITY = "evaluation_integrity"
     DATA_QUALITY = "data_quality"
+    # Base-paper inspired additions (LIAR2 / temporal leakage)
+    TEMPORAL_LEAKAGE = "temporal_leakage"
+    AGGREGATION_LEAKAGE = "aggregation_leakage"
 
 # ── Software Version Tracking ─────────────────────────────────────────────────
 
