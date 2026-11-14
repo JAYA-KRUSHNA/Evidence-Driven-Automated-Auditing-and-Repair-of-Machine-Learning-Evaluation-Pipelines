@@ -33,13 +33,39 @@ const _METRIC_LABELS = {
 };
 const _LOWER_IS_BETTER = new Set(["mae","mse","rmse","mape","cv_mean_rmse","cv_std_rmse","cv_std_accuracy"]);
 
+// ── KPI Count-Up Animation ──
+function animateCountUp(element, targetValue, duration = 800) {
+  if (!element) return;
+  const isNumber = !isNaN(parseFloat(targetValue));
+  if (!isNumber) { element.innerText = targetValue; return; }
+  
+  const target = parseFloat(targetValue);
+  const start = parseFloat(element.innerText) || 0;
+  const diff = target - start;
+  if (diff === 0) { element.innerText = targetValue; return; }
+  
+  const startTime = performance.now();
+  const isInteger = Number.isInteger(target);
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = start + diff * eased;
+    element.innerText = isInteger ? Math.round(current) : current.toFixed(2);
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
 // ── Toast Notifications ─────────────────────────────────────────
 function showToast(message, type = "info") {
   const container = document.getElementById("toast-container");
   if (!container) return;
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
-  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
   toast.innerHTML = `<span style="font-size:15px;">${icon}</span><span style="font-weight:500;">${message}</span>`;
   container.appendChild(toast);
   setTimeout(() => {
@@ -392,13 +418,13 @@ async function runValidation() {
       }
     }
     const elValTotal = document.getElementById("val-total");
-    if (elValTotal) elValTotal.innerText = val.total_checks;
+    if (elValTotal) animateCountUp(elValTotal, val.total_checks);
     const elValPass = document.getElementById("val-passed");
-    if (elValPass) elValPass.innerText = val.passed_checks;
+    if (elValPass) animateCountUp(elValPass, val.passed_checks);
     const elValWarn = document.getElementById("val-warnings");
-    if (elValWarn) elValWarn.innerText = val.warning_count;
+    if (elValWarn) animateCountUp(elValWarn, val.warning_count);
     const elValFail = document.getElementById("val-failed");
-    if (elValFail) elValFail.innerText = val.failed_checks;
+    if (elValFail) animateCountUp(elValFail, val.failed_checks);
     const elKpiVal = document.getElementById("kpi-validation-status");
     if (elKpiVal) {
       elKpiVal.innerText = val.status.replace(/_/g, " ");
@@ -2471,7 +2497,7 @@ async function refreshModelsList() {
     if (!res.ok) return;
     state.models = await res.json();
     const countEl = document.getElementById("kpi-models-count");
-    if (countEl) countEl.innerText = state.models.length;
+    if (countEl) animateCountUp(countEl, state.models.length);
 
     const sel = document.getElementById("predict-model-select");
     if (sel) {

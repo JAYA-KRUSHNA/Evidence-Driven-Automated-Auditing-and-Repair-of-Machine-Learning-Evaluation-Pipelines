@@ -57,7 +57,25 @@ class DatasetIngestion:
 
         try:
             if ext == ".csv":
-                df = pd.read_csv(path, low_memory=False)
+                # Try common encodings in order — covers UTF-8, Excel/Windows exports, and Latin-1
+                _csv_encodings = ["utf-8", "utf-8-sig", "cp1252", "latin-1", "iso-8859-1"]
+                df = None
+                last_exc = None
+                for enc in _csv_encodings:
+                    try:
+                        df = pd.read_csv(path, low_memory=False, encoding=enc)
+                        break
+                    except (UnicodeDecodeError, ValueError):
+                        last_exc = None
+                        continue
+                    except Exception as e:
+                        last_exc = e
+                        break
+                if df is None:
+                    raise DatasetReadError(
+                        f"Failed to read {path.name}: could not decode with any supported encoding "
+                        f"(tried: {', '.join(_csv_encodings)})"
+                    )
             elif ext == ".xlsx":
                 df = pd.read_excel(path, engine="openpyxl")
             elif ext == ".xls":

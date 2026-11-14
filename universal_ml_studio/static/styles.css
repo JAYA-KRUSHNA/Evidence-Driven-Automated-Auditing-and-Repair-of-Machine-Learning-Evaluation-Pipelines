@@ -1676,3 +1676,147 @@ code, .font-mono, .code-metric {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   Visual Polish — Dot Grid, Glow Effects, Animations & Decorative Enhancements
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Dashboard Background — Subtle Dot Grid Pattern ───────── */
+.app-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(circle, rgba(99,102,241,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 0;
+}
+[data-theme="light"] .app-container::after {
+  background-image: radial-gradient(circle, rgba(99,102,241,0.04) 1px, transparent 1px);
+}
+
+/* ── 2. Enhanced Card Hover — Indigo Glow Shadow ─────────────── */
+.glass-card:hover {
+  box-shadow: var(--shadow-lg), 0 8px 25px rgba(99,102,241,0.12);
+}
+[data-theme="light"] .glass-card:hover {
+  box-shadow: var(--shadow-lg), 0 8px 25px rgba(99,102,241,0.12);
+}
+
+/* ── 3. Topbar Animated Gradient Border Bottom ───────────────── */
+.top-bar {
+  position: relative;
+}
+.top-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899, #06b6d4, #6366f1);
+  background-size: 200% 100%;
+  animation: topbar-gradient 4s linear infinite;
+}
+@keyframes topbar-gradient {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── 4. Chart Area Graph-Paper Background ────────────────────── */
+[id^="viz-container-"], [id^="eda-"], [id^="compare-"] {
+  background-image: linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  border-radius: 12px;
+}
+[data-theme="light"] [id^="viz-container-"],
+[data-theme="light"] [id^="eda-"],
+[data-theme="light"] [id^="compare-"] {
+  background-image: linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px);
+}
+
+/* ── 5. Empty State Styles ───────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  min-height: 200px;
+}
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+  animation: empty-float 3s ease-in-out infinite;
+}
+.empty-state-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-bright);
+  margin-bottom: 8px;
+}
+.empty-state-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 300px;
+  line-height: 1.5;
+}
+@keyframes empty-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ── 6. Section Header Gradient Underline ────────────────────── */
+.card-title::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 2px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, #6366f1, #06b6d4);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+.glass-card:hover .card-title::after {
+  width: 80px;
+}
+
+/* ── 7. Footer Wave Divider ──────────────────────────────────── */
+.footer-wave {
+  position: fixed;
+  bottom: 36px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  pointer-events: none;
+  z-index: 99;
+  overflow: hidden;
+}
+.footer-wave svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--bg-card);
+  opacity: 0.3;
+}
+
+/* ── 8. Staggered Card Entrance Animation ────────────────────── */
+.kpi-grid .kpi-card {
+  animation: cardEntrance 0.4s ease-out both;
+}
+.kpi-grid .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+.kpi-grid .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+.kpi-grid .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+.kpi-grid .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+
+@keyframes cardEntrance {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}

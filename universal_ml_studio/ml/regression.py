@@ -155,9 +155,22 @@ class RegressionEngine:
 
     @staticmethod
     def _prepare(df: pd.DataFrame, target_column: str):
+        from sklearn.preprocessing import LabelEncoder
         data = df.dropna(subset=[target_column]).copy()
         y = data[target_column].astype(float).values
-        X_df = data.drop(columns=[target_column]).select_dtypes(include=["number"]).fillna(0)
+        X_df = data.drop(columns=[target_column])
+
+        # Drop high-cardinality string columns (names, free text, > 50 unique)
+        for col in X_df.select_dtypes(include=["object", "category"]).columns:
+            if X_df[col].nunique() > 50:
+                X_df = X_df.drop(columns=[col])
+
+        # Label-encode remaining low-cardinality categorical columns
+        for col in X_df.select_dtypes(include=["object", "category"]).columns:
+            le = LabelEncoder()
+            X_df[col] = le.fit_transform(X_df[col].astype(str))
+
+        X_df = X_df.select_dtypes(include=["number"]).fillna(0)
         return X_df.values, y, X_df.columns.tolist()
 
     @staticmethod

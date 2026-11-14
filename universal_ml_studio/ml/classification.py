@@ -247,7 +247,7 @@ class ClassificationEngine:
 
     @staticmethod
     def _prepare(df: pd.DataFrame, target_column: str):
-        """Drop non-numeric columns, encode target, return (X, y, cols, le)."""
+        """Encode categorical columns, encode target, return (X, y, cols, le)."""
         data = df.copy()
         # Drop rows where target is missing
         data = data.dropna(subset=[target_column])
@@ -255,7 +255,17 @@ class ClassificationEngine:
         y_raw = data[target_column]
         X_df = data.drop(columns=[target_column])
 
-        # Keep only numeric columns for X
+        # Drop high-cardinality identifier-like string columns (names, free text)
+        for col in X_df.select_dtypes(include=["object", "category"]).columns:
+            if X_df[col].nunique() > 50:
+                X_df = X_df.drop(columns=[col])
+
+        # Label-encode remaining categorical columns (low cardinality)
+        for col in X_df.select_dtypes(include=["object", "category"]).columns:
+            col_le = LabelEncoder()
+            X_df[col] = col_le.fit_transform(X_df[col].astype(str))
+
+        # Fill missing numeric values
         X_df = X_df.select_dtypes(include=["number"]).fillna(0)
         feature_cols = X_df.columns.tolist()
 

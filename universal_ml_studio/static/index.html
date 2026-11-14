@@ -201,7 +201,7 @@
               <div class="kpi-body">
                 <div class="kpi-label">Active Dataset</div>
                 <div class="kpi-val" id="kpi-dataset-name">No Dataset</div>
-                <div class="kpi-sub"><span style="color:var(--accent-indigo);">●</span> Loaded in Memory</div>
+                <div class="kpi-sub"><span style="color:var(--accent-indigo);">●</span> 📦 Loaded in Memory</div>
               </div>
             </div>
             <div class="kpi-card">
@@ -214,7 +214,7 @@
               <div class="kpi-body">
                 <div class="kpi-label">Dimensions</div>
                 <div class="kpi-val" id="kpi-dimensions">0 × 0</div>
-                <div class="kpi-sub"><span style="color:var(--accent-cyan);">●</span> Rows × Features</div>
+                <div class="kpi-sub"><span style="color:var(--accent-cyan);">●</span> 📐 Rows × Features</div>
               </div>
             </div>
             <div class="kpi-card">
@@ -228,7 +228,7 @@
               <div class="kpi-body">
                 <div class="kpi-label">Validation Status</div>
                 <div class="kpi-val" id="kpi-validation-status">Pending</div>
-                <div class="kpi-sub"><span style="color:var(--accent-emerald);">●</span> 30+ Quality Checks</div>
+                <div class="kpi-sub"><span style="color:var(--accent-emerald);">●</span> 🧪 30+ Quality Checks</div>
               </div>
             </div>
             <div class="kpi-card">
@@ -242,7 +242,7 @@
               <div class="kpi-body">
                 <div class="kpi-label">Trained Models</div>
                 <div class="kpi-val" id="kpi-models-count">0</div>
-                <div class="kpi-sub"><span style="color:var(--accent-amber);">●</span> Active Artifacts</div>
+                <div class="kpi-sub"><span style="color:var(--accent-amber);">●</span> 🏆 Active Artifacts</div>
               </div>
             </div>
           </div>
@@ -470,7 +470,11 @@
               <table class="data-table" id="dataset-preview-table">
                 <thead>
                   <tr>
-                    <th>Select a dataset to preview columns and data</th>
+                    <th><div class="empty-state">
+    <div class="empty-state-icon">📂</div>
+    <div class="empty-state-title">No Dataset Selected</div>
+    <div class="empty-state-desc">Choose a dataset from the sidebar to preview its columns and data</div>
+</div></th>
                   </tr>
                 </thead>
                 <tbody></tbody>
@@ -535,8 +539,11 @@
               </div>
             </div>
             <div id="validation-checks-list">
-              <p style="color:var(--text-dim); font-size:13px;">No validation report generated yet. Click "Run
-                Validation" above.</p>
+<div class="empty-state">
+    <div class="empty-state-icon">🛡️</div>
+    <div class="empty-state-title">Validation Pending</div>
+    <div class="empty-state-desc">Click 'Run 4-Tier Validation' to check data quality, schema, and integrity</div>
+</div>
             </div>
           </div>
         </section>
@@ -684,7 +691,11 @@
                 <div class="card-title">💡 Actionable Data Quality Recommendations</div>
               </div>
               <div id="eda-quality-recommendations-list" style="display:flex; flex-direction:column; gap:10px;">
-                <span style="color:var(--text-muted); font-size:13px;">No recommendations yet.</span>
+<div class="empty-state">
+    <div class="empty-state-icon">💡</div>
+    <div class="empty-state-title">No Insights Yet</div>
+    <div class="empty-state-desc">Run EDA analysis to generate AI-powered recommendations</div>
+</div>
               </div>
             </div>
           </div>
@@ -1221,8 +1232,11 @@
                 </div>
               </div>
               <div id="ml-result-display">
-                <p style="color:var(--text-dim); font-size:13px;">No model trained yet in this session. Configure
-                  parameters and train a model.</p>
+<div class="empty-state">
+    <div class="empty-state-icon">🧠</div>
+    <div class="empty-state-title">No Models Trained</div>
+    <div class="empty-state-desc">Select a target column and algorithm to train your first model</div>
+</div>
               </div>
             </div>
           </div>
@@ -1578,8 +1592,11 @@
             </div>
             <div id="auditor-findings-container"
               style="display:flex; flex-direction:column; gap:14px; margin-top:10px;">
-              <span style="color:var(--text-muted); font-size:13px;">Select a dataset and click "Run Deep Pipeline
-                Audit" to detect potential evaluation leakage and pipeline bugs.</span>
+<div class="empty-state">
+    <div class="empty-state-icon">🔍</div>
+    <div class="empty-state-title">Ready to Audit</div>
+    <div class="empty-state-desc">Select a dataset and click 'Run Full Audit' to analyze your ML pipeline</div>
+</div>
             </div>
           </div>
         </section>
@@ -1611,7 +1628,11 @@
                 <span class="badge badge-invalid" id="repair-before-badge">Leaky / Inflated</span>
               </div>
               <div id="repair-before-metrics-list" style="display:flex; flex-direction:column; gap:10px;">
-                <span style="color:var(--text-muted); font-size:13px;">No repair run yet.</span>
+<div class="empty-state">
+    <div class="empty-state-icon">🛠️</div>
+    <div class="empty-state-title">No Repairs Run</div>
+    <div class="empty-state-desc">Run the pipeline auditor first, then apply automated repairs</div>
+</div>
               </div>
             </div>
 
@@ -1622,7 +1643,11 @@
                 <span class="badge badge-valid" id="repair-after-badge">Honest / Production-Ready</span>
               </div>
               <div id="repair-after-metrics-list" style="display:flex; flex-direction:column; gap:10px;">
-                <span style="color:var(--text-muted); font-size:13px;">No repair run yet.</span>
+<div class="empty-state">
+    <div class="empty-state-icon">🛠️</div>
+    <div class="empty-state-title">No Repairs Run</div>
+    <div class="empty-state-desc">Run the pipeline auditor first, then apply automated repairs</div>
+</div>
               </div>
             </div>
           </div>
@@ -1721,8 +1746,11 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td colspan="7" style="text-align:center; color:var(--text-muted);">Click "Run Synthetic Benchmark"
-                      to evaluate auditor detection against controlled corruption scenarios.</td>
+                    <td colspan="7" style="text-align:center; color:var(--text-muted);"><div class="empty-state">
+    <div class="empty-state-icon">🧪</div>
+    <div class="empty-state-title">Benchmark Lab</div>
+    <div class="empty-state-desc">Click 'Run Synthetic Benchmark' to stress-test your pipeline</div>
+</div></td>
                   </tr>
                 </tbody>
               </table>
@@ -1734,6 +1762,11 @@
   </div>
 
   <div id="toast-container"></div>
+  <div class="footer-wave">
+    <svg viewBox="0 0 1440 20" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,10 C360,20 720,0 1080,10 C1260,15 1380,5 1440,10 L1440,20 L0,20 Z" />
+    </svg>
+  </div>
   <footer class="app-footer">
     <p>Crafted with <span class="app-footer-heart">♥</span> by Keerthi &amp; Jayakrushna</p>
   </footer>
